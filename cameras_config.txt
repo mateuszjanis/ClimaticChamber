@@ -1,0 +1,8 @@
+#64MP
+#dtoverlay=arducam-64mp,cam0,vcm=off
+
+#12MP + obiektyw
+#dtoverlay=imx477,cam0,vcm=off
+
+#16MP
+#dtoverlay=imx519,cam0,vcm=off
