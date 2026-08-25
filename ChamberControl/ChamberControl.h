@@ -1,6 +1,7 @@
-#include <gpiod.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <gpiod.hpp>
+#include <chrono>
+#include <thread>
+#include <iostream>
+
 
 
