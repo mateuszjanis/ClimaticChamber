@@ -1,1 +1,124 @@
+# ==============================================================================
+# GITIGNORE - RASPBERRY PI HUB / GATEWAY (KOMORA KLIMATYCZNA)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Dane dostępowe, Klucze i Środowisko (SECRETS)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+config.local.ini
+credentials.json
+secrets.py
+*.key
+*.pem
+*.pub
+id_rsa*
+id_ed25519*
+
+# ------------------------------------------------------------------------------
+# 2. Wygenerowane pliki danych, logi i zdjęcia (DATA / MEDIA)
+# ------------------------------------------------------------------------------
+# Logi sensoryczne z ESP32 i wygenerowane bazy danych
+/data/logs/
+/data/incoming/
+/data/outgoing/
+*.log
 *.csv
+*.jsonl
+*.dat
+*.sqlite
+*.sqlite3
+*.db
+
+# Wykonane zdjęcia (libcamera) i bufor przed wysłaniem na SFTP
+/data/photos/
+/captures/
+/tmp_upload/
+*.jpg
+*.jpeg
+*.png
+*.raw
+*.h264
+
+# ------------------------------------------------------------------------------
+# 3. Python (Środowiska wirtualne, cache, pakiety)
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+.mypy_cache/
+
+# ------------------------------------------------------------------------------
+# 4. Artefakty kompilacji (C/C++ dla lokalnych narzędzi/daemonów RPi)
+# ------------------------------------------------------------------------------
+*.o
+*.obj
+*.elf
+*.bin
+*.out
+/build/
+/bin/
+
+# ------------------------------------------------------------------------------
+# 5. Konfiguracje systemowe zawierające sekrety (HostAPD, GSM, PPP)
+# ------------------------------------------------------------------------------
+# Ignoruj pliki konfiguracyjne z hasłami AP / PIN-em SIM / danymi FTP.
+# Przechowuj w repozytorium tylko wersje wzorcowe (np. hostapd.conf.example).
+/config/local/
+/etc_backup/
+hostapd.conf
+wpa_supplicant.conf
+vsftpd.conf
+proftpd.conf
+chat-sim7600
+wvdial.conf
+
+# ------------------------------------------------------------------------------
+# 6. System, Edytory i Pliki Tymczasowe Linux/macOS/Windows
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Swapy i backupy edytorów (Vim, Nano, Emacs)
+*~
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# VS Code / IDE settings
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
