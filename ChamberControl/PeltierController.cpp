@@ -36,7 +36,7 @@ void setCooling(::gpiod::line_request &request){
 
         request.set_values(COOL_OFFSETS,{gpiod::line::value::INACTIVE, gpiod::line::value::INACTIVE});
 
-        std::cout << "Peltier ustawiony w tryb chłodzenia.\n";
+        std::cout << "------- Peltier set: COOLING -------\n";
 }
 
 
@@ -48,12 +48,12 @@ void setHeating(::gpiod::line_request &request){
         
         request.set_values(HEAT_OFFSETS,{gpiod::line::value::INACTIVE, gpiod::line::value::INACTIVE});
 
-        std::cout << "Peltier ustawiony w tryb grzania.\n";
+        std::cout << "------- Peltier set: HEATING -------\n";
 }
 
 void setIdle(::gpiod::line_request &request){
         
         request.set_values(ALL_OFFSETS,{gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE});
         
-        std::cout << "Peltier ustawiony w stan bezczynny.\n";
+        std::cout << "------- Peltier set: IDLE -------\n";
 }
