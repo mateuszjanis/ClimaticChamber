@@ -1,27 +1,14 @@
 #include "PeltierController.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-//----------------------------------- PINS -----------------------------------//
-////////////////////////////////////////////////////////////////////////////////
-
-const int HEAT_PIN_1 = 17;
-const int HEAT_PIN_2 = 23;
-const int COOL_PIN_1 = 24;
-const int COOL_PIN_2 = 27;
-
-////////////////////////////////////////////////////////////////////////////////
-//--------------------------------- VARIABLES --------------------------------//
-////////////////////////////////////////////////////////////////////////////////
-
-const int TOGGLE_DELAY = 10; // seconds
-
-////////////////////////////////////////////////////////////////////////////////
 //---------------------------------- OBJECTS ---------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
 
 gpiod::line::offsets COOL_OFFSETS = {COOL_PIN_1, COOL_PIN_2};
 gpiod::line::offsets HEAT_OFFSETS = {HEAT_PIN_1, HEAT_PIN_2};
 gpiod::line::offsets ALL_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2};
+gpiod::line::offsets FAN_OFFSET = {FAN_PIN};
+gpiod::line::offsets INIT_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2, FAN_PIN};
 
 ////////////////////////////////////////////////////////////////////////////////
 //--------------------------------- FUNCTIONS --------------------------------//
@@ -36,7 +23,7 @@ void setCooling(::gpiod::line_request &request){
 
         request.set_values(COOL_OFFSETS,{gpiod::line::value::INACTIVE, gpiod::line::value::INACTIVE});
 
-        std::cout << "------- Peltier set: COOLING -------\n";
+        std::cout << "------------------ Peltier set: COOLING -----------------\n";
 }
 
 
@@ -48,12 +35,26 @@ void setHeating(::gpiod::line_request &request){
         
         request.set_values(HEAT_OFFSETS,{gpiod::line::value::INACTIVE, gpiod::line::value::INACTIVE});
 
-        std::cout << "------- Peltier set: HEATING -------\n";
+        std::cout << "------------------ Peltier set: HEATING --------------------\n";
 }
 
 void setIdle(::gpiod::line_request &request){
         
         request.set_values(ALL_OFFSETS,{gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE});
         
-        std::cout << "------- Peltier set: IDLE -------\n";
+        std::cout << "------------------ Peltier set: IDLE --------------------\n";
+}
+
+void fanOn(::gpiod::line_request &request){
+        
+        request.set_values(FAN_OFFSET,{gpiod::line::value::INACTIVE});
+        
+        std::cout << "---------------------- Fan set: ON ----------------------\n";
+}
+
+void fanOff(::gpiod::line_request &request){
+        
+        request.set_values(FAN_OFFSET,{gpiod::line::value::ACTIVE});
+        
+        std::cout << "---------------------- Fan set: OFF ---------------------\n";
 }

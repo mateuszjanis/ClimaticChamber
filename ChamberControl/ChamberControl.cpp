@@ -7,7 +7,7 @@ int main() {
     auto request = chip.prepare_request()
         .set_consumer(CONSUMER)
         .add_line_settings(
-            ALL_OFFSETS,
+            INIT_OFFSETS,
             ::gpiod::line_settings()
                 .set_direction(::gpiod::line::direction::OUTPUT)
                 .set_output_value(::gpiod::line::value::ACTIVE)
@@ -17,9 +17,11 @@ int main() {
     printSensors();
 
     setCooling(request);
+    fanOn(request);
     updateSensors();
     printSensors();
     std::this_thread::sleep_for(std::chrono::seconds(TOGGLE_DELAY));
+    fanOff(request);
     
     setHeating(request);
     updateSensors();

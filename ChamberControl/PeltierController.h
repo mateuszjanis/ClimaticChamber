@@ -12,16 +12,17 @@
 //----------------------------------- PINS -----------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
 
-extern const int HEAT_PIN_1;
-extern const int HEAT_PIN_2;
-extern const int COOL_PIN_1;
-extern const int COOL_PIN_2;
+const int HEAT_PIN_1 = 17;
+const int HEAT_PIN_2 = 23;
+const int COOL_PIN_1 = 24;
+const int COOL_PIN_2 = 27;
+const int FAN_PIN = 16;
 
 ////////////////////////////////////////////////////////////////////////////////
 //--------------------------------- VARIABLES --------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
 
-extern const int TOGGLE_DELAY; // seconds
+const int TOGGLE_DELAY = 10; // seconds
 
 ////////////////////////////////////////////////////////////////////////////////
 //---------------------------------- OBJECTS ---------------------------------//
@@ -30,6 +31,8 @@ extern const int TOGGLE_DELAY; // seconds
 extern gpiod::line::offsets COOL_OFFSETS;
 extern gpiod::line::offsets HEAT_OFFSETS;
 extern gpiod::line::offsets ALL_OFFSETS;
+extern gpiod::line::offsets FAN_OFFSET;
+extern gpiod::line::offsets INIT_OFFSETS;
 
 ////////////////////////////////////////////////////////////////////////////////
 //--------------------------------- FUNCTIONS --------------------------------//
@@ -38,6 +41,7 @@ extern gpiod::line::offsets ALL_OFFSETS;
 void setCooling(::gpiod::line_request &request);
 void setHeating(::gpiod::line_request &request);
 void setIdle(::gpiod::line_request &request);
-
+void fanOn(::gpiod::line_request &request);
+void fanOff(::gpiod::line_request &request);
 
 
