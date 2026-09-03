@@ -1,9 +1,7 @@
 #pragma once
 #include <gpiod.hpp>
 #include <chrono>
-#include <thread>
 #include <iostream>
-#include <optional>
 
 #define CHIP_PATH "/dev/gpiochip4"
 #define CONSUMER "chamber_rpi5"
@@ -22,7 +20,18 @@ const int FAN_PIN = 16;
 //--------------------------------- VARIABLES --------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
 
-const int TOGGLE_DELAY = 10; // seconds
+const int sensors_update_delay = 2; // seconds
+
+extern int curr_mode; // 0 = idle, 1 = heating, -1 = cooling
+extern double goal_temperature; // degrees Celsius
+const double temp_sensitivity = 2.0; // degrees Celsius
+const double temp_diff_toggle_threshold = 4.0; // degrees Celsius
+const double temp_diff_fan_threshold = 30.0; // degrees Celsius
+
+double temp_min = 23; // minimum temperature
+double temp_max = 27; // maximum temperature
+double temp_heating_stop = 24.5; // temperature at which heating stops
+double temp_cooling_stop = 25.5; // temperature at which cooling stops
 
 ////////////////////////////////////////////////////////////////////////////////
 //---------------------------------- OBJECTS ---------------------------------//
@@ -43,5 +52,8 @@ void setHeating(::gpiod::line_request &request);
 void setIdle(::gpiod::line_request &request);
 void fanOn(::gpiod::line_request &request);
 void fanOff(::gpiod::line_request &request);
+void setMode(::gpiod::line_request &request, unsigned int mode);
+void runTemperatureControl(::gpiod::line_request &request);
+void calculateTemperatureControlParameters();
 
 
