@@ -8,12 +8,12 @@ void handleInput(::gpiod::line_request &request) {
     
     while(!is_temp_ok) {
 
-        double received_goal_temp = 0.0;
+        double received_goal_temp = 25.0;
         std::cout << "Wpisz docelowa temperature:" << std::endl;
         std::cin >> received_goal_temp;
 
-        if (received_goal_temp < 0.0 || received_goal_temp > 100.0) {
-            std::cout << "Nieprawidlowa temperatura. Wpisz wartosc z zakresu 0-100." << std::endl;
+        if (received_goal_temp < 15.0 || received_goal_temp > 30.0) {
+            std::cout << "Nieprawidlowa temperatura. Wpisz wartosc z zakresu 15-30." << std::endl;
         }
         else {
             std::cout << "Otrzymana temperatura: " << received_goal_temp << std::endl;

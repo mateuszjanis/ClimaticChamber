@@ -21,15 +21,30 @@ gpiod::line::offsets INIT_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PI
 
 
 void setCooling(::gpiod::line_request &request){
+        
+        ::gpiod::line::values heat_line_values = request.get_values(HEAT_OFFSETS);
 
+        if (heat_line_values[0] == gpiod::line::value::INACTIVE && 
+            heat_line_values[1] == gpiod::line::value::INACTIVE) {
+        
+                request.set_values(COOL_OFFSETS,{gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE});
+        }
+        
         request.set_values(COOL_OFFSETS,{gpiod::line::value::INACTIVE, gpiod::line::value::INACTIVE});
         curr_mode = -1;
-
 
         std::cout << "------------------ Peltier set: COOLING -----------------\n";
 }
 
 void setHeating(::gpiod::line_request &request){
+
+        ::gpiod::line::values cool_line_values = request.get_values(COOL_OFFSETS);
+
+        if (cool_line_values[0] == gpiod::line::value::INACTIVE && 
+            cool_line_values[1] == gpiod::line::value::INACTIVE) {
+        
+                request.set_values(HEAT_OFFSETS,{gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE});
+        }
 
         request.set_values(HEAT_OFFSETS,{gpiod::line::value::INACTIVE, gpiod::line::value::INACTIVE});
         curr_mode = 1;
