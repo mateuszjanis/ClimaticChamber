@@ -1,26 +1,6 @@
 #include "PeltierController.h"
 
-
-int curr_mode = 0; // 0 = idle, 1 = heating, -1 = cooling
-double goal_temperature = 25.0; // default goal temperature
-
-
-////////////////////////////////////////////////////////////////////////////////
-//---------------------------------- OBJECTS ---------------------------------//
-////////////////////////////////////////////////////////////////////////////////
-
-gpiod::line::offsets COOL_OFFSETS = {COOL_PIN_1, COOL_PIN_2};
-gpiod::line::offsets HEAT_OFFSETS = {HEAT_PIN_1, HEAT_PIN_2};
-gpiod::line::offsets ALL_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2};
-gpiod::line::offsets FAN_OFFSET = {FAN_PIN};
-gpiod::line::offsets INIT_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2, FAN_PIN};
-
-////////////////////////////////////////////////////////////////////////////////
-//--------------------------------- FUNCTIONS --------------------------------//
-////////////////////////////////////////////////////////////////////////////////
-
-
-void setCooling(::gpiod::line_request &request){
+void PeltierController::setCooling(){
         
         ::gpiod::line::values heat_line_values = request.get_values(HEAT_OFFSETS);
 
@@ -36,7 +16,7 @@ void setCooling(::gpiod::line_request &request){
         std::cout << "------------------ Peltier set: COOLING -----------------\n";
 }
 
-void setHeating(::gpiod::line_request &request){
+void PeltierController::setHeating(){
 
         ::gpiod::line::values cool_line_values = request.get_values(COOL_OFFSETS);
 
@@ -52,7 +32,7 @@ void setHeating(::gpiod::line_request &request){
         std::cout << "------------------ Peltier set: HEATING --------------------\n";
 }
 
-void setIdle(::gpiod::line_request &request){
+void PeltierController::setIdle(){
         
         request.set_values(ALL_OFFSETS,{gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE});
         curr_mode = 0;
@@ -60,21 +40,21 @@ void setIdle(::gpiod::line_request &request){
         std::cout << "------------------ Peltier set: IDLE --------------------\n";
 }
 
-void fanOn(::gpiod::line_request &request){
+void PeltierController::fanOn(){
         
         request.set_values(FAN_OFFSET,{gpiod::line::value::INACTIVE});
         
         std::cout << "---------------------- Fan set: ON ----------------------\n";
 }
 
-void fanOff(::gpiod::line_request &request){
+void PeltierController::fanOff(){
         
         request.set_values(FAN_OFFSET,{gpiod::line::value::ACTIVE});
         
         std::cout << "---------------------- Fan set: OFF ---------------------\n";
 }
 
-void setMode(::gpiod::line_request &request, int mode){
+void PeltierController::setMode(enum curr_mode mode){
         
         if(curr_mode == mode){
                 std::cerr << "------------------ Peltier already in mode -----------------\n";
@@ -97,13 +77,13 @@ void setMode(::gpiod::line_request &request, int mode){
                 fanOff(request);
                 
                 switch(mode){
-                case 0:
+                case IDLE:
                         setIdle(request);
                         break;
-                case 1:
+                case HEATING:
                         setHeating(request);
                         break;
-                case -1:
+                case COOLING:
                         setCooling(request);
                         break;
                 default:
@@ -115,28 +95,28 @@ void setMode(::gpiod::line_request &request, int mode){
         }
 }
 
-void runTemperatureControl(::gpiod::line_request &request){
+void PeltierController::runTemperatureControl(){
 
         updateSensors();
 
         switch (curr_mode) {
-                case 0: // idle
+                case IDLE: // idle
                         if (temp_mean < temp_min) {
-                                setMode(request, 1); // switch to heating
+                                setMode(request, HEATING); // switch to heating
                         } else if (temp_mean > temp_max) {
-                                setMode(request, -1); // switch to cooling
+                                setMode(request, COOLING); // switch to cooling
                         } else {
-                                setMode(request, 0); // switch to idle
+                                setMode(request, IDLE); // switch to idle
                         }
                         break;
-                case 1: // heating
+                case HEATING: // heating
                         if (temp_mean >= temp_heating_stop) {
-                                setMode(request, 0); // switch to idle
+                                setMode(request, IDLE); // switch to idle
                         }
                         break;
-                case -1: // cooling
+                case COOLING: // cooling
                         if (temp_mean <= temp_cooling_stop) {
-                                setMode(request, 0); // switch to idle
+                                setMode(request, IDLE); // switch to idle
                         }
                         break;
                 default:
@@ -149,7 +129,7 @@ void runTemperatureControl(::gpiod::line_request &request){
 
 }
 
-void calculateTemperatureControlParameters(){
+void PeltierController::calculateTemperatureControlParameters(){
         
         updateSensors();
 
@@ -166,4 +146,11 @@ void calculateTemperatureControlParameters(){
         cout << "Temperature Heating Stop: " << temp_heating_stop << " °C" << endl;
         cout << "Temperature Cooling Stop: " << temp_cooling_stop << " °C" << endl;
         cout << "--------------------------------------------------------------------\n";
+}
+
+void PeltierController::setTemperatureGoal(double goal_temp) {
+    
+    goal_temperature = goal_temp;
+    calculateTemperatureControlParameters();
+
 }

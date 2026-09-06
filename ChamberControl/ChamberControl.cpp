@@ -2,26 +2,25 @@
 #include "ControlSensors.h"
 #include <thread>
 
-void handleInput(::gpiod::line_request &request) {
-    
-    bool is_temp_ok = false;
-    
-    while(!is_temp_ok) {
+#define CHIP_PATH "/dev/gpiochip4"
+#define CONSUMER "chamber_rpi5"
 
-        double received_goal_temp = 25.0;
-        std::cout << "Wpisz docelowa temperature:" << std::endl;
-        std::cin >> received_goal_temp;
+////////////////////////////////////////////////////////////////////////////////
+//----------------------------------- PINS -----------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
-        if (received_goal_temp < 15.0 || received_goal_temp > 30.0) {
-            std::cout << "Nieprawidlowa temperatura. Wpisz wartosc z zakresu 15-30." << std::endl;
-        }
-        else {
-            std::cout << "Otrzymana temperatura: " << received_goal_temp << std::endl;
-            goal_temperature = received_goal_temp;
-            is_temp_ok = true;
-        }
-    }
-}
+const int HEAT_PIN_1 = 17;
+const int HEAT_PIN_2 = 23;
+const int COOL_PIN_1 = 24;
+const int COOL_PIN_2 = 27;
+const int FAN_PIN = 16;
+
+gpiod::line::offsets COOL_OFFSETS = {COOL_PIN_1, COOL_PIN_2};
+gpiod::line::offsets HEAT_OFFSETS = {HEAT_PIN_1, HEAT_PIN_2};
+gpiod::line::offsets ALL_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2};
+gpiod::line::offsets FAN_OFFSET = {FAN_PIN};
+gpiod::line::offsets INIT_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2, FAN_PIN};
+
 
 int main() {
 
@@ -40,12 +39,11 @@ int main() {
     // std::thread sensorsThread(ReciveSensorsData);
     // std::thread sftpThread(); only sending or also receiving? if only sending, then no need for a thread, just call the function in the main loop
 
-    handleInput(request);
-    calculateTemperatureControlParameters();
+    PeltierController peltierController(request, 22.0);
 
     while (true) {
 
-        runTemperatureControl(request);
+        peltierController.runTemperatureControl();
         printSensors();
         
     }
