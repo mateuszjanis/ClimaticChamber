@@ -11,7 +11,7 @@ void PeltierController::setCooling(){
         }
         
         request.set_values(COOL_OFFSETS,{gpiod::line::value::INACTIVE, gpiod::line::value::INACTIVE});
-        curr_mode = -1;
+        curr_mode = COOLING;
 
         std::cout << "------------------ Peltier set: COOLING -----------------\n";
 }
@@ -27,7 +27,7 @@ void PeltierController::setHeating(){
         }
 
         request.set_values(HEAT_OFFSETS,{gpiod::line::value::INACTIVE, gpiod::line::value::INACTIVE});
-        curr_mode = 1;
+        curr_mode = HEATING;
 
         std::cout << "------------------ Peltier set: HEATING --------------------\n";
 }
@@ -35,7 +35,7 @@ void PeltierController::setHeating(){
 void PeltierController::setIdle(){
         
         request.set_values(ALL_OFFSETS,{gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE, gpiod::line::value::ACTIVE});
-        curr_mode = 0;
+        curr_mode = IDLE;
         
         std::cout << "------------------ Peltier set: IDLE --------------------\n";
 }
@@ -54,7 +54,7 @@ void PeltierController::fanOff(){
         std::cout << "---------------------- Fan set: OFF ---------------------\n";
 }
 
-void PeltierController::setMode(enum curr_mode mode){
+void PeltierController::setMode(enum mode mode){
         
         if(curr_mode == mode){
                 std::cerr << "------------------ Peltier already in mode -----------------\n";
@@ -63,32 +63,32 @@ void PeltierController::setMode(enum curr_mode mode){
         else{
                 std::cout << "------------------- Peltier changing mode -----------------\n";
                 
-                setIdle(request);
-                fanOn(request);
+                setIdle();
+                fanOn();
 
-                double pelt_temp_diff = abs(pelt_temp_down - pelt_temp_up);
+                double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
 
                 while(pelt_temp_diff > temp_diff_toggle_threshold){
                         updateSensors();
-                        pelt_temp_diff = abs(pelt_temp_down - pelt_temp_up);
-                        std::this_thread::sleep_for(std::chrono::seconds(sensors_update_delay));
+                        pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
+                        std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
                 }
 
-                fanOff(request);
+                fanOff();
                 
                 switch(mode){
                 case IDLE:
-                        setIdle(request);
+                        setIdle();
                         break;
                 case HEATING:
-                        setHeating(request);
+                        setHeating();
                         break;
                 case COOLING:
-                        setCooling(request);
+                        setCooling();
                         break;
                 default:
                         std::cerr << "------------------ Invalid mode -----------------\n";
-                        setIdle(request);
+                        setIdle();
                         break;
                 }
 
@@ -102,30 +102,30 @@ void PeltierController::runTemperatureControl(){
         switch (curr_mode) {
                 case IDLE: // idle
                         if (temp_mean < temp_min) {
-                                setMode(request, HEATING); // switch to heating
+                                setMode(HEATING); // switch to heating
                         } else if (temp_mean > temp_max) {
-                                setMode(request, COOLING); // switch to cooling
+                                setMode(COOLING); // switch to cooling
                         } else {
-                                setMode(request, IDLE); // switch to idle
+                                setMode(IDLE); // switch to idle
                         }
                         break;
                 case HEATING: // heating
                         if (temp_mean >= temp_heating_stop) {
-                                setMode(request, IDLE); // switch to idle
+                                setMode(IDLE); // switch to idle
                         }
                         break;
                 case COOLING: // cooling
                         if (temp_mean <= temp_cooling_stop) {
-                                setMode(request, IDLE); // switch to idle
+                                setMode(IDLE); // switch to idle
                         }
                         break;
                 default:
                         std::cerr << "------------------ Invalid mode -----------------\n";
-                        setIdle(request);
+                        setIdle();
                         break;
         }
 
-        std::this_thread::sleep_for(std::chrono::seconds(sensors_update_delay));
+        std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
 
 }
 
@@ -138,14 +138,14 @@ void PeltierController::calculateTemperatureControlParameters(){
         double temp_heating_stop = goal_temperature - 0.25 * temp_sensitivity; // temperature at which heating stops
         double temp_cooling_stop = goal_temperature + 0.25 * temp_sensitivity; // temperature at which cooling stops
 
-        cout << "------------------ Temperature Control Parameters -----------------\n";
-        cout << "Goal Temperature: " << goal_temperature << " °C" << endl;
-        cout << "Temperature Sensitivity: " << temp_sensitivity << " °C" << endl;
-        cout << "Temperature Min: " << temp_min << " °C" << endl;
-        cout << "Temperature Max: " << temp_max << " °C" << endl;
-        cout << "Temperature Heating Stop: " << temp_heating_stop << " °C" << endl;
-        cout << "Temperature Cooling Stop: " << temp_cooling_stop << " °C" << endl;
-        cout << "--------------------------------------------------------------------\n";
+        std::cout << "------------------ Temperature Control Parameters -----------------\n";
+        std::cout << "Goal Temperature: " << goal_temperature << " °C" << std::endl;
+        std::cout << "Temperature Sensitivity: " << temp_sensitivity << " °C" << std::endl;
+        std::cout << "Temperature Min: " << temp_min << " °C" << std::endl;
+        std::cout << "Temperature Max: " << temp_max << " °C" << std::endl;
+        std::cout << "Temperature Heating Stop: " << temp_heating_stop << " °C" << std::endl;
+        std::cout << "Temperature Cooling Stop: " << temp_cooling_stop << " °C" << std::endl;
+        std::cout << "--------------------------------------------------------------------\n";
 }
 
 void PeltierController::setTemperatureGoal(double goal_temp) {

@@ -2,18 +2,37 @@
 #include <gpiod.hpp>
 #include <chrono>
 #include <iostream>
+#include "ControlSensors.h"
+
+////////////////////////////////////////////////////////////////////////////////
+//----------------------------------- PINS -----------------------------------//
+////////////////////////////////////////////////////////////////////////////////
+
+const int HEAT_PIN_1 = 17;
+const int HEAT_PIN_2 = 23;
+const int COOL_PIN_1 = 24;
+const int COOL_PIN_2 = 27;
+const int FAN_PIN = 16;
+
+gpiod::line::offsets COOL_OFFSETS = {COOL_PIN_1, COOL_PIN_2};
+gpiod::line::offsets HEAT_OFFSETS = {HEAT_PIN_1, HEAT_PIN_2};
+gpiod::line::offsets ALL_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2};
+gpiod::line::offsets FAN_OFFSET = {FAN_PIN};
+gpiod::line::offsets INIT_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2, FAN_PIN};
 
 class PeltierController {
 
     ::gpiod::line_request &request;
 
-    enum curr_mode { 
+    enum mode { 
         IDLE = 0,
         HEATING = 1,
         COOLING = -1
     };
 
-    extern double goal_temperature; // degrees Celsius
+    enum mode curr_mode;
+
+    double goal_temperature; // degrees Celsius
     const double temp_sensitivity; // degrees Celsius
     const double temp_diff_toggle_threshold; // degrees Celsius
     const double temp_diff_fan_threshold; // degrees Celsius
@@ -47,7 +66,7 @@ private:
     void fanOn();
     void fanOff();
     void calculateTemperatureControlParameters();
-    void setMode(unsigned int mode);
+    void setMode(enum mode mode);
 
 };
 
