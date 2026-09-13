@@ -163,10 +163,10 @@ void PeltierController::calculateTemperatureControlParameters(){
         
         updateSensors();
 
-        double temp_min = goal_temperature - temp_sensitivity; // minimum temperature
-        double temp_max = goal_temperature + temp_sensitivity; // maximum temperature
-        double temp_heating_stop = goal_temperature - 0.25 * temp_sensitivity; // temperature at which heating stops
-        double temp_cooling_stop = goal_temperature + 0.25 * temp_sensitivity; // temperature at which cooling stops
+        temp_min = goal_temperature - temp_sensitivity; // minimum temperature
+        temp_max = goal_temperature + temp_sensitivity; // maximum temperature
+        temp_heating_stop = goal_temperature - 0.25 * temp_sensitivity; // temperature at which heating stops
+        temp_cooling_stop = goal_temperature + 0.25 * temp_sensitivity; // temperature at which cooling stops
 
         std::cout << "------------------ Temperature Control Parameters -----------------\n";
         std::cout << "Goal Temperature: " << goal_temperature << " °C" << std::endl;
