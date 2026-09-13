@@ -47,7 +47,6 @@ public:
     PeltierController(::gpiod::line_request &request, double goal_temp) : request(request), 
         temp_sensitivity(2.0), temp_diff_toggle_threshold(4.0), temp_diff_fan_threshold(30.0) 
     {
-        calculateTemperatureControlParameters();
         setTemperatureGoal(goal_temp);
         
         curr_mode = IDLE;

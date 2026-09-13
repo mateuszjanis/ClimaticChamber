@@ -22,7 +22,7 @@ int main() {
     // std::thread sensorsThread(ReciveSensorsData);
     // std::thread sftpThread(); only sending or also receiving? if only sending, then no need for a thread, just call the function in the main loop
 
-    PeltierController peltierController(request, 22.0);
+    PeltierController peltierController(request, 18.0);
 
     while (true) {
 

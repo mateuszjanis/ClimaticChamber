@@ -20,7 +20,7 @@ extern double hum_mean;
 extern double pelt_temp_in;
 extern double pelt_temp_out;
 
-const int sensors_update_interval = 2; // seconds
+const int sensors_update_interval = 10; // seconds
 
 const std::string temp_up_path = "/sys/bus/iio/devices/iio:device0/in_temp_input";
 const std::string hum_up_path  = "/sys/bus/iio/devices/iio:device0/in_humidityrelative_input";

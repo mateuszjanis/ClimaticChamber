@@ -118,6 +118,8 @@ bool updateSensors() {
 
     // pelt_temp_in = readSensor(pelt_temp_in_path);
     // pelt_temp_out = readSensor(pelt_temp_out_path);
+    
+    printSensors();
 
     return sensors_reading_error; // Return the error status
 
@@ -125,14 +127,14 @@ bool updateSensors() {
 
 void printSensors() {
 
-    updateSensors();
-
     std::cout << "-------------------- Sensor Readings --------------------" << std::endl;
     std::cout << "TempDown: " << temp_down << " °C ";
     std::cout << "HumDown:  " << hum_down << " % " << std::endl;
     std::cout << "TempUp:   " << temp_up << " °C ";
     std::cout << "HumUp:    " << hum_up << " % " << std::endl;
-    std::cout << "PeltTempDown: " << pelt_temp_in << " °C ";
-    std::cout << "PeltTempUp: " << pelt_temp_out << " °C " << std::endl;
+    std::cout << "TempMean: " << temp_mean << " °C ";
+    std::cout << "HumMean:  " << hum_mean << " % " << std::endl;
+    std::cout << "PeltTempIn: " << pelt_temp_in << " °C ";
+    std::cout << "PeltTempOut: " << pelt_temp_out << " °C " << std::endl;
     std::cout << "---------------------------------------------------------" << std::endl;
 }
