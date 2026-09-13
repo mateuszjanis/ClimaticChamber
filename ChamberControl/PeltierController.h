@@ -8,17 +8,17 @@
 //----------------------------------- PINS -----------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
 
-const int HEAT_PIN_1 = 17;
-const int HEAT_PIN_2 = 23;
-const int COOL_PIN_1 = 24;
-const int COOL_PIN_2 = 27;
-const int FAN_PIN = 16;
+extern const int HEAT_PIN_1;
+extern const int HEAT_PIN_2;
+extern const int COOL_PIN_1;
+extern const int COOL_PIN_2;
+extern const int FAN_PIN;
 
-gpiod::line::offsets COOL_OFFSETS = {COOL_PIN_1, COOL_PIN_2};
-gpiod::line::offsets HEAT_OFFSETS = {HEAT_PIN_1, HEAT_PIN_2};
-gpiod::line::offsets ALL_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2};
-gpiod::line::offsets FAN_OFFSET = {FAN_PIN};
-gpiod::line::offsets INIT_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2, FAN_PIN};
+extern gpiod::line::offsets COOL_OFFSETS;
+extern gpiod::line::offsets HEAT_OFFSETS;
+extern gpiod::line::offsets ALL_OFFSETS;
+extern gpiod::line::offsets FAN_OFFSET;
+extern gpiod::line::offsets INIT_OFFSETS;
 
 class PeltierController {
 

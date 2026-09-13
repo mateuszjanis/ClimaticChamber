@@ -19,10 +19,7 @@ int main() {
                 .set_output_value(::gpiod::line::value::ACTIVE)
         ).do_request();
 
-    // initial sensors readings
-    updateSensors();
-
-    std::thread sensorsThread(ReciveSensorsData);
+    // std::thread sensorsThread(ReciveSensorsData);
     // std::thread sftpThread(); only sending or also receiving? if only sending, then no need for a thread, just call the function in the main loop
 
     PeltierController peltierController(request, 22.0);

@@ -1,57 +1,56 @@
 #include "ControlSensors.h"
 
-double temp_up;
-double hum_up;
-double temp_down;
-double hum_down;
-double pelt_temp_in;
-double pelt_temp_out;
+double temp_up = -127.0;
+double hum_up = -127.0;
+double temp_down = -127.0;
+double hum_down = -127.0;
+double temp_mean = -127.0;
+double hum_mean = -127.0;
+double pelt_temp_in = -127.0;
+double pelt_temp_out = -127.0;
 
 std::string readLastLine(const char* filepath) {
 
-    std::ifstream file(filepath);
-    while (!file.is_open()) {
-        std::cout << "Error opening file: " << filepath << ". Trying again..." << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
+    std::string lastLine;
+    
+    // 1. Otwarcie pliku na końcu (ate) i w trybie binarnym
+    std::ifstream file(filepath, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) return "";
 
-    file.seekg(0, std::ios::end);
+    // Pobranie rozmiaru pliku
     std::streamoff pos = file.tellg();
+    if (pos == 0) return ""; // Zabezpieczenie przed pustym plikiem
 
-    if (pos <= 0)
-        return "";
+    char ch = '\0';
+    
+    // Pominięcie ewentualnego pustego znaku nowej linii na samym końcu pliku
+    file.seekg(-1, std::ios::end);
+    file.get(ch);
+    if (ch == '\n') pos--;
 
-    // Szukamy początku ostatniej linii
-    while (pos > 0)
-    {
-        --pos;
-        file.seekg(pos);
-
-        char c;
-        file.get(c);
-
-        if (c == '\n')
-        {
-            ++pos;
-            break;
+    // Szukanie początku ostatniej linii od końca
+    while (pos > 0) {
+        file.seekg(--pos);
+        file.get(ch);
+        if (ch == '\n') {
+            break; 
         }
     }
 
-    // Odczytujemy ostatnią linię
-    file.clear();
-    file.seekg(pos);
-
-    std::string line;
-    std::getline(file, line);
-
+    // Zapisanie wyniku do zmiennej
+    std::getline(file, lastLine);
     file.close();
 
-    return line;
+    return lastLine;
 }
 
-void readPeltierSensors(){
+bool readPeltierSensors(){
 
     const char* filepath = "/home/esp/Data/PeltierTemperature_1.csv";
+    if (access( filepath, F_OK ) == -1 ){
+        return true; // file does not exist
+    }
+
     std::string sensorsLine = readLastLine(filepath);
     char* endPtr;
 
@@ -60,11 +59,14 @@ void readPeltierSensors(){
 
     if (temp1 < -100 || temp1 > 100 || temp2 < -100 || temp2 > 100) {
         std::cout << "Error reading Peltier sensors: " << temp1 << ", " << temp2 << std::endl;
-        return;
+        return true; // Return true to indicate an error
+    } else {
+        pelt_temp_in = temp1;
+        pelt_temp_out = temp2;
+        return false; // Return false to indicate successful reading
     }
     
-    pelt_temp_in = temp1;
-    pelt_temp_out = temp2;
+    return true; // Return true to indicate an error if the line is empty or malformed
 
 }
 
@@ -80,18 +82,45 @@ double readSensor(const std::string& filepath) {
 
 }
 
-void updateSensors() {
+bool updateSensors() {
 
-    temp_up = readSensor(temp_up_path);
-    hum_up = readSensor(hum_up_path);
-    temp_down = readSensor(temp_down_path);
-    hum_down = readSensor(hum_down_path);
-    temp_mean = (temp_up + temp_down) / 2.0;
-    hum_mean = (hum_up + hum_down) / 2.0;
+    bool sensors_reading_error = false;
+
+    double temp_up_temp = readSensor(temp_up_path);
+    double hum_up_temp = readSensor(hum_up_path);
+    double temp_down_temp = readSensor(temp_down_path);
+    double hum_down_temp = readSensor(hum_down_path);
+
+    if (temp_up_temp < 0 || hum_up_temp < 0) {
+        sensors_reading_error =  true; // error
+    } else {
+        // successful reading
+        temp_up = temp_up_temp;
+        hum_up = hum_up_temp;
+    }
+
+    if (temp_down_temp < 0 || hum_down_temp < 0) {
+        sensors_reading_error =  true; // error
+    } else {
+        // successful reading
+        temp_down = temp_down_temp;
+        hum_down = hum_down_temp;
+    }
+
+    if (!sensors_reading_error) {
+        temp_mean = (temp_up + temp_down) / 2.0;
+        hum_mean = (hum_up + hum_down) / 2.0;
+    }
+
+    if (readPeltierSensors()) {
+        sensors_reading_error =   true; // error reading Peltier sensors
+    }
+
     // pelt_temp_in = readSensor(pelt_temp_in_path);
     // pelt_temp_out = readSensor(pelt_temp_out_path);
-    readPeltierSensors();
-    
+
+    return sensors_reading_error; // Return the error status
+
 }
 
 void printSensors() {
@@ -106,12 +135,4 @@ void printSensors() {
     std::cout << "PeltTempDown: " << pelt_temp_in << " °C ";
     std::cout << "PeltTempUp: " << pelt_temp_out << " °C " << std::endl;
     std::cout << "---------------------------------------------------------" << std::endl;
-}
-
-void ReciveSensorsData() {
-    while (true) {
-        updateSensors();
-        printSensors();
-        std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
-    }
 }

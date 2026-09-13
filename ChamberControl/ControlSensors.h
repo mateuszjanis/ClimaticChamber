@@ -5,6 +5,7 @@
 #include <chrono>
 #include <thread>
 #include <cstdlib>
+#include <unistd.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 //--------------------------------- VARIABLES --------------------------------//
@@ -32,8 +33,7 @@ const std::string hum_down_path  = "/sys/bus/iio/devices/iio:device1/in_humidity
 //--------------------------------- FUNCTIONS --------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
 
-void readPeltierSensors();
+bool readPeltierSensors();
 double readSensor(const std::string& filepath);
-void updateSensors();
+bool updateSensors();
 void printSensors();
-void ReciveSensorsData();

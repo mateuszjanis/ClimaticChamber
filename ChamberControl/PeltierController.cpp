@@ -1,5 +1,17 @@
 #include "PeltierController.h"
 
+const int HEAT_PIN_1 = 17;
+const int HEAT_PIN_2 = 23;
+const int COOL_PIN_1 = 24;
+const int COOL_PIN_2 = 27;
+const int FAN_PIN = 16;
+
+gpiod::line::offsets COOL_OFFSETS = {COOL_PIN_1, COOL_PIN_2};
+gpiod::line::offsets HEAT_OFFSETS = {HEAT_PIN_1, HEAT_PIN_2};
+gpiod::line::offsets ALL_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2};
+gpiod::line::offsets FAN_OFFSET = {FAN_PIN};
+gpiod::line::offsets INIT_OFFSETS = {COOL_PIN_1, COOL_PIN_2, HEAT_PIN_1, HEAT_PIN_2, FAN_PIN};
+
 void PeltierController::setCooling(){
         
         ::gpiod::line::values heat_line_values = request.get_values(HEAT_OFFSETS);
@@ -97,8 +109,9 @@ void PeltierController::setMode(enum mode mode){
 
 void PeltierController::runTemperatureControl(){
 
-        updateSensors();
+        bool sensors_reading_error = updateSensors();
 
+        if (!sensors_reading_error){
         switch (curr_mode) {
                 case IDLE: // idle
                         if (temp_mean < temp_min) {
@@ -123,6 +136,11 @@ void PeltierController::runTemperatureControl(){
                         std::cerr << "------------------ Invalid mode -----------------\n";
                         setIdle();
                         break;
+        }
+        } else {
+                std::cerr << "------------------ Error reading sensors -----------------\n";
+                setMode(IDLE);
+                fanOff();
         }
 
         std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
