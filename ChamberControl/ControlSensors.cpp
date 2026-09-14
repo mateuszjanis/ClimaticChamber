@@ -118,8 +118,6 @@ bool updateSensors() {
 
     // pelt_temp_in = readSensor(pelt_temp_in_path);
     // pelt_temp_out = readSensor(pelt_temp_out_path);
-    
-    printSensors();
 
     return sensors_reading_error; // Return the error status
 

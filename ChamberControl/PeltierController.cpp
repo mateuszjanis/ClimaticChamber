@@ -68,6 +68,8 @@ void PeltierController::fanOff(){
 
 void PeltierController::setMode(enum mode mode){
         
+        bool enable_temp_equalization = true;
+        
         if(curr_mode == mode){
                 std::cerr << "------------------ Peltier already in mode -----------------\n";
                 return;
@@ -75,38 +77,64 @@ void PeltierController::setMode(enum mode mode){
         else{
                 std::cout << "------------------- Peltier changing mode -----------------\n";
                 
-                setIdle();
-                fanOn();
-
-                double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
-
-                while(pelt_temp_diff > temp_diff_toggle_threshold){
-                        updateSensors();
-                        printSensors();
-                        pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
-                        std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
-                }
-
-                fanOff();
-                
                 switch(mode){
-                case IDLE:
-                        setIdle();
-                        break;
-                case HEATING:
-                        setHeating();
-                        break;
-                case COOLING:
-                        setCooling();
-                        break;
-                default:
-                        std::cerr << "------------------ Invalid mode -----------------\n";
-                        setIdle();
-                        break;
+                        case IDLE:
+                                setIdle();
+                                enable_temp_equalization = false;
+                                break;
+                        case HEATING:
+                                if (pelt_temp_in > pelt_temp_out) {
+                                        setHeating();
+                                        enable_temp_equalization = false;
+                                }
+                                break;
+                        case COOLING:
+                                if (pelt_temp_in < pelt_temp_out) {
+                                        setCooling();
+                                        enable_temp_equalization = false;
+                                }       
+                                break;
+                        default:
+                                std::cerr << "------------------ Invalid mode -----------------\n";
+                                enable_temp_equalization = true;
+                                break;
                 }
+                
+                if (enable_temp_equalization){
+                        
+                        setIdle();
+                        fanOn();
 
+                        double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
+
+                        while(pelt_temp_diff > temp_diff_toggle_threshold){
+                                updateSensors();
+                                printSensors();
+                                pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
+                                std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
+                        }
+
+                        fanOff();
+                        
+                        switch(mode){
+                        case IDLE:
+                                setIdle();
+                                break;
+                        case HEATING:
+                                setHeating();
+                                break;
+                        case COOLING:
+                                setCooling();
+                                break;
+                        default:
+                                std::cerr << "------------------ Invalid mode -----------------\n";
+                                setIdle();
+                                break;
+                        }
+                }
         }
 }
+
 
 void PeltierController::runTemperatureControl(){
 
@@ -115,9 +143,7 @@ void PeltierController::runTemperatureControl(){
         double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
         
         if(pelt_temp_diff > temp_diff_fan_threshold) fanOn();
-        
-        std::cout << "temp_cooling_stop: " << temp_cooling_stop << std::endl;
-        
+
         if (!sensors_reading_error){
                 switch (curr_mode) {
                         case IDLE: // idle
