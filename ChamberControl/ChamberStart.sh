@@ -1,2 +1,2 @@
-g++ -Wall ChamberControl.cpp PeltierController.cpp ControlSensors.cpp -o ChamberControl -lgpiodcxx
+g++ -Wall ChamberControl.cpp PeltierController.cpp ControlSensors.cpp -o ChamberControl -lgpiodcxx -pthread
 ./ChamberControl

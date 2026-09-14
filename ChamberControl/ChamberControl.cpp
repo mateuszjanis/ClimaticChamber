@@ -1,7 +1,13 @@
 #include "PeltierController.h"
-#include "ControlSensors.h"
+// #include "ControlSensors.h"
+#include <thread>
+
+#define CHIP_PATH "/dev/gpiochip4"
+#define CONSUMER "chamber_rpi5"
 
 int main() {
+
+    // set up GPIO chip and request lines
 
     auto chip = ::gpiod::chip(CHIP_PATH);
     auto request = chip.prepare_request()
@@ -13,24 +19,17 @@ int main() {
                 .set_output_value(::gpiod::line::value::ACTIVE)
         ).do_request();
 
-    updateSensors();
-    printSensors();
+    // std::thread sensorsThread(ReciveSensorsData);
+    // std::thread sftpThread(); only sending or also receiving? if only sending, then no need for a thread, just call the function in the main loop
 
-    setCooling(request);
-    fanOn(request);
-    updateSensors();
-    printSensors();
-    std::this_thread::sleep_for(std::chrono::seconds(TOGGLE_DELAY));
-    fanOff(request);
-    
-    setHeating(request);
-    updateSensors();
-    printSensors();
-    std::this_thread::sleep_for(std::chrono::seconds(TOGGLE_DELAY));
+    PeltierController peltierController(request, 18.0);
 
-    setIdle(request);
-    updateSensors();
-    printSensors();
+    while (true) {
+
+        peltierController.runTemperatureControl();
+        printSensors();
+        
+    }
 
     return 0;
 }

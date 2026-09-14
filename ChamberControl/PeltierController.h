@@ -1,32 +1,18 @@
 #pragma once
 #include <gpiod.hpp>
 #include <chrono>
-#include <thread>
 #include <iostream>
-#include <optional>
-
-#define CHIP_PATH "/dev/gpiochip4"
-#define CONSUMER "chamber_rpi5"
+#include "ControlSensors.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------- PINS -----------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
 
-const int HEAT_PIN_1 = 17;
-const int HEAT_PIN_2 = 23;
-const int COOL_PIN_1 = 24;
-const int COOL_PIN_2 = 27;
-const int FAN_PIN = 16;
-
-////////////////////////////////////////////////////////////////////////////////
-//--------------------------------- VARIABLES --------------------------------//
-////////////////////////////////////////////////////////////////////////////////
-
-const int TOGGLE_DELAY = 10; // seconds
-
-////////////////////////////////////////////////////////////////////////////////
-//---------------------------------- OBJECTS ---------------------------------//
-////////////////////////////////////////////////////////////////////////////////
+extern const int HEAT_PIN_1;
+extern const int HEAT_PIN_2;
+extern const int COOL_PIN_1;
+extern const int COOL_PIN_2;
+extern const int FAN_PIN;
 
 extern gpiod::line::offsets COOL_OFFSETS;
 extern gpiod::line::offsets HEAT_OFFSETS;
@@ -34,14 +20,57 @@ extern gpiod::line::offsets ALL_OFFSETS;
 extern gpiod::line::offsets FAN_OFFSET;
 extern gpiod::line::offsets INIT_OFFSETS;
 
-////////////////////////////////////////////////////////////////////////////////
-//--------------------------------- FUNCTIONS --------------------------------//
-////////////////////////////////////////////////////////////////////////////////
+class PeltierController {
 
-void setCooling(::gpiod::line_request &request);
-void setHeating(::gpiod::line_request &request);
-void setIdle(::gpiod::line_request &request);
-void fanOn(::gpiod::line_request &request);
-void fanOff(::gpiod::line_request &request);
+    ::gpiod::line_request &request;
+
+    enum mode { 
+        IDLE = 0,
+        HEATING = 1,
+        COOLING = -1
+    };
+
+    enum mode curr_mode;
+
+    double goal_temperature; // degrees Celsius
+    const double temp_sensitivity; // degrees Celsius
+    const double temp_diff_toggle_threshold; // degrees Celsius
+    const double temp_diff_fan_threshold; // degrees Celsius
+
+    double temp_min; // minimum temperature
+    double temp_max; // maximum temperature
+    double temp_heating_stop; // temperature at which heating stops
+    double temp_cooling_stop; // temperature at which cooling stops
+
+public:
+
+    PeltierController(::gpiod::line_request &request, double goal_temp) : request(request), 
+        temp_sensitivity(2.0), temp_diff_toggle_threshold(4.0), temp_diff_fan_threshold(30.0) 
+    {
+        setTemperatureGoal(goal_temp);
+        
+        curr_mode = IDLE;
+        setMode(IDLE);
+        fanOff();
+    }
+    
+    void runTemperatureControl();
+    void setTemperatureGoal(double goal_temp);
+
+private:
+
+    void setCooling();
+    void setHeating();
+    void setIdle();
+    void fanOn();
+    void fanOff();
+    void calculateTemperatureControlParameters();
+    void setMode(enum mode mode);
+
+};
+
+
+
+
 
 
