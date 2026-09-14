@@ -57,7 +57,7 @@ bool readPeltierSensors(){
     float temp1 = std::strtof(sensorsLine.c_str(), &endPtr);
     float temp2 = std::strtof(endPtr + 1, nullptr);
 
-    if (temp1 < -100 || temp1 > 100 || temp2 < -100 || temp2 > 100) {
+    if (abs(temp1 - pelt_temp_in) < acceptable_sens_diff || abs(temp2 - pelt_temp_out) < acceptable_sens_diff) {
         std::cout << "Error reading Peltier sensors: " << temp1 << ", " << temp2 << std::endl;
         return true; // Return true to indicate an error
     } else {
@@ -91,7 +91,7 @@ bool updateSensors() {
     double temp_down_temp = readSensor(temp_down_path);
     double hum_down_temp = readSensor(hum_down_path);
 
-    if (temp_up_temp < 0 || hum_up_temp < 0) {
+    if (abs(temp_up_temp - temp_up) < acceptable_sens_diff || abs(hum_up_temp - hum_up) < acceptable_sens_diff) {
         sensors_reading_error =  true; // error
     } else {
         // successful reading
@@ -99,7 +99,7 @@ bool updateSensors() {
         hum_up = hum_up_temp;
     }
 
-    if (temp_down_temp < 0 || hum_down_temp < 0) {
+    if (abs(temp_down_temp - temp_down) < acceptable_sens_diff || abs(hum_down_temp - hum_down) < acceptable_sens_diff) {
         sensors_reading_error =  true; // error
     } else {
         // successful reading

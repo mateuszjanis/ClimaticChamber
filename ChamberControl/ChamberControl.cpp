@@ -26,8 +26,8 @@ int main() {
 
     while (true) {
 
-        peltierController.runTemperatureControl();
         printSensors();
+        peltierController.runTemperatureControl();
         
     }
 

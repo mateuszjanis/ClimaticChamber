@@ -143,6 +143,7 @@ void PeltierController::runTemperatureControl(){
         double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
         
         if(pelt_temp_diff > temp_diff_fan_threshold) fanOn();
+        else fanOff();
 
         if (!sensors_reading_error){
                 switch (curr_mode) {

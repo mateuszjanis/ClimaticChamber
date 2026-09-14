@@ -31,7 +31,7 @@ class PeltierController {
     };
 
     enum mode curr_mode;
-
+    
     double goal_temperature; // degrees Celsius
     const double temp_sensitivity; // degrees Celsius
     const double temp_diff_toggle_threshold; // degrees Celsius
