@@ -9,6 +9,8 @@ double hum_mean = -127.0;
 double pelt_temp_in = -127.0;
 double pelt_temp_out = -127.0;
 
+const char* peltier_filepath = "/home/esp/Data/PeltierTemperature_1.csv";
+
 std::string readLastLine(const char* filepath) {
 
     std::string lastLine;
@@ -45,19 +47,18 @@ std::string readLastLine(const char* filepath) {
 }
 
 bool readPeltierSensors(){
-
-    const char* filepath = "/home/esp/Data/PeltierTemperature_1.csv";
-    if (access( filepath, F_OK ) == -1 ){
-        return true; // file does not exist
+    
+    if (access( peltier_filepath, F_OK ) == -1 ){
+        return true; // file does not exist / is open
     }
 
-    std::string sensorsLine = readLastLine(filepath);
+    std::string sensorsLine = readLastLine(peltier_filepath);
     char* endPtr;
 
     float temp1 = std::strtof(sensorsLine.c_str(), &endPtr);
     float temp2 = std::strtof(endPtr + 1, nullptr);
 
-    if (abs(temp1 - pelt_temp_in) < acceptable_sens_diff || abs(temp2 - pelt_temp_out) < acceptable_sens_diff) {
+    if (abs(temp1 - pelt_temp_in) > acceptable_sens_diff || abs(temp2 - pelt_temp_out) > acceptable_sens_diff) {
         std::cout << "Error reading Peltier sensors: " << temp1 << ", " << temp2 << std::endl;
         return true; // Return true to indicate an error
     } else {
@@ -82,6 +83,58 @@ double readSensor(const std::string& filepath) {
 
 }
 
+bool initialPeltierSensorsReading(){
+    
+    if (access( peltier_filepath, F_OK ) == -1 ){
+        return false; // file does not exist / is open
+    }
+    
+    std::string sensorsLine = readLastLine(peltier_filepath);
+    char* endPtr;
+
+    float temp1 = std::strtof(sensorsLine.c_str(), &endPtr);
+    float temp2 = std::strtof(endPtr + 1, nullptr);
+    
+    if (temp1 > 0 && temp2 > 0){
+        pelt_temp_in = temp1;
+        pelt_temp_out = temp2;
+        return true;
+    }
+    
+    return false;
+    
+}
+
+void initialSensorsReading(){
+    
+    bool sensors_reading_error = true;
+    
+    double temp_up_temp = readSensor(temp_up_path);
+    double hum_up_temp = readSensor(hum_up_path);
+    double temp_down_temp = readSensor(temp_down_path);
+    double hum_down_temp = readSensor(hum_down_path);
+    
+    while(sensors_reading_error){
+        temp_up_temp = readSensor(temp_up_path);
+        hum_up_temp = readSensor(hum_up_path);
+        temp_down_temp = readSensor(temp_down_path);
+        hum_down_temp = readSensor(hum_down_path);
+        
+        if(temp_up_temp > 0 && hum_up_temp > 0 && temp_down_temp > 0 && hum_down_temp > 0 && initialPeltierSensorsReading()) sensors_reading_error = false;
+        
+        std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
+
+    }
+
+    temp_up = temp_up_temp;
+    hum_up = hum_up_temp;
+    temp_down = temp_down_temp;
+    hum_down = hum_down_temp;
+    temp_mean = (temp_up + temp_down) / 2.0;
+    hum_mean = (hum_up + hum_down) / 2.0;
+
+}
+
 bool updateSensors() {
 
     bool sensors_reading_error = false;
@@ -91,7 +144,7 @@ bool updateSensors() {
     double temp_down_temp = readSensor(temp_down_path);
     double hum_down_temp = readSensor(hum_down_path);
 
-    if (abs(temp_up_temp - temp_up) < acceptable_sens_diff || abs(hum_up_temp - hum_up) < acceptable_sens_diff) {
+    if (abs(temp_up_temp - temp_up) > acceptable_sens_diff || abs(hum_up_temp - hum_up) > acceptable_sens_diff) {
         sensors_reading_error =  true; // error
     } else {
         // successful reading
@@ -99,7 +152,7 @@ bool updateSensors() {
         hum_up = hum_up_temp;
     }
 
-    if (abs(temp_down_temp - temp_down) < acceptable_sens_diff || abs(hum_down_temp - hum_down) < acceptable_sens_diff) {
+    if (abs(temp_down_temp - temp_down) > acceptable_sens_diff || abs(hum_down_temp - hum_down) > acceptable_sens_diff) {
         sensors_reading_error =  true; // error
     } else {
         // successful reading

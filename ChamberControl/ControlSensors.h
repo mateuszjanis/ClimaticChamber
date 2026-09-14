@@ -38,3 +38,5 @@ bool readPeltierSensors();
 double readSensor(const std::string& filepath);
 bool updateSensors();
 void printSensors();
+void initialSensorsReading();
+bool initialPeltierSensorsReading();
