@@ -2,11 +2,13 @@
 #include <curl/curl.h>
 #include <cstdio>
 
+unsigned int recoeds_to_write = 0;
+
 void initializeFile(){
     
     std::ofstream file(data_file_path);
 
-        // Zapisanie danych oddzielonych przecinkami i znakiem nowej linii
+    // Zapisanie danych oddzielonych przecinkami i znakiem nowej linii
     file << "DATE" << ","
          << "TIME" << ","
          << "temp_mean" << ","
@@ -62,5 +64,31 @@ void sendToServer(const char* localpath, const char* remoteurl,
     }
     fclose(f);
     return (res == CURLE_OK);
+}
+
+bool initializeServerSSH(){
+
+}
+
+bool sendToServer(){
+    
+}
+
+void runDataRecording(){
+
+    unsigned int seconds_to_decrease = 0;
+
+    while (!saveLocally() && seconds_to_decrease < sensors_update_interval) {
+        std::cout << "Failed to save locally. Trying again...": << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        seconds_to_decrease += 10;
+    }
+
+    if (!sendToServer()) {
+        records_to_write++;
+        std::cout << "Failed to save on server. Trying in next cycle...": << std::endl;
+    }
+
+    std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval - seconds_to_decrease));
 
 }
