@@ -1,29 +1,36 @@
-#inclde "DataRecording.h"
+#include "DataRecording.h"
 #include <thread>
 
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 
-double temp_mean;
-double hum_mean;
-float pelt_temp_in;
-float pelt_temp_out;
-
 int main(){
 
     srand( (unsigned)time(NULL) );
 
-    while(true){
-        
-        temp_mean = rand();
-        hum_mean = rand();
-        pelt_temp_in = rand();
-        pelt_temp_out = rand();
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    CURL *curl = curl_easy_init();
 
-        runDataRecording();
+    if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, "sftp://student.agh.edu.pl/home/imirgrp/matjanis/CHAMBER/Data/ChamberData.csv");
+        curl_easy_setopt(curl, CURLOPT_USERPWD, "matjanis:Kezi!de5to");
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
     }
 
+
+    while(true){
+        
+        temp_mean = rand()%100;
+        hum_mean = rand()%100;
+        pelt_temp_in = rand()%100;
+        pelt_temp_out = rand()%100;
+
+        runDataRecording(curl);
+    }
+
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
 
     return 0;
 }

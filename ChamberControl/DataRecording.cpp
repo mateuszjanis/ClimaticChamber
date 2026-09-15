@@ -1,6 +1,9 @@
 #include "DataRecording.h"
-#include <curl/curl.h>
-#include <cstdio>
+
+double temp_mean;
+double hum_mean;
+float pelt_temp_in;
+float pelt_temp_out;
 
 unsigned int records_to_write = 0;
 
@@ -20,6 +23,9 @@ void initializeFile(){
 
 bool saveLocally(){
 
+    time_t now = std::time(nullptr);
+    struct tm *time_struct = std::localtime(&now);
+
     // Otwarcie pliku w trybie dopisywania (append)
     std::ofstream file(data_file_path, std::ios::app);
 
@@ -29,64 +35,97 @@ bool saveLocally(){
     }
 
     // Zapisanie danych oddzielonych przecinkami i znakiem nowej linii
-    file << __DATE__ << ","
-         << __TIME__ << ","
+    file << time_struct->tm_year + 1900 << ":"
+         << time_struct->tm_mon + 1 << ":"
+         << time_struct->tm_mday << " "
+         << time_struct->tm_hour << ":"
+         << time_struct->tm_min << ":"
+         << time_struct->tm_sec << ","
          << temp_mean << ","
          << hum_mean << ","
          << pelt_temp_in << ","
          << pelt_temp_out << "\n";
 
+
+
     // Zwraca true, jeśli nie wystąpiły żadne błędy zapisu (np. brak miejsca na dysku)
-    return file.good();
+    if(file.good()){
 
-}
+        std::cout << "Saved succesfully" << std::endl;
+        return true;
 
-void sendToServer(const char* localpath, const char* remoteurl,
-                 const char* user, const char* privkey){
+    } else {
 
-    FILE* f = fopen(localpath, "rb");
-    if (!f) return false;
-    fseek(f, 0, SEEK_END);
-    curl_off_t size = (curl_off_t)ftell(f);
-    fseek(f, 0, SEEK_SET);
+        return false;
 
-    CURL* curl = curl_easy_init();
-    CURLcode res = CURLE_OK;
-    if (curl) {
-        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-        curl_easy_setopt(curl, CURLOPT_URL, remoteurl); /* e.g. "sftp://host:22/remote/dir/file" */
-        curl_easy_setopt(curl, CURLOPT_USERNAME, user);
-        curl_easy_setopt(curl, CURLOPT_SSH_PRIVATE_KEYFILE, privkey);
-        curl_easy_setopt(curl, CURLOPT_READDATA, f);
-        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, size);
-        res = curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
     }
-    fclose(f);
-    return (res == CURLE_OK);
-}
-
-bool initializeServerSSH(){
 
 }
 
-bool sendToServer(){
+bool sendToServer(CURL *curl){
+
+    if(curl){
+    // do dopisania wczytywanie niezapisanych danych
     
+    time_t now = std::time(nullptr);
+    struct tm *time_struct = std::localtime(&now);
+
+    std::string data_line = 
+    std::to_string(time_struct->tm_year + 1900) + ":" +
+    std::to_string(time_struct->tm_mon + 1) + ":" +
+    std::to_string(time_struct->tm_mday) + " " +
+    std::to_string(time_struct->tm_hour) + ":" +
+    std::to_string(time_struct->tm_min) + ":" +
+    std::to_string(time_struct->tm_sec) + "," +
+    std::to_string(hum_mean) + "," + 
+    std::to_string(temp_mean) + "," + 
+    std::to_string(pelt_temp_in) + "," + 
+    std::to_string(pelt_temp_out) +"\n";
+
+    // 2. fmemopen: Otwiera string w pamięci RAM jako wirtualny plik tylko do odczytu ("r").
+    // To eliminuje całkowicie potrzebę tworzenia struktury i callbacku.
+    FILE* mem_file = fmemopen((void*)data_line.c_str(), data_line.length(), "r");
+    if (!mem_file) return false;
+
+    curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
+    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)data_line.length());
+    curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
+
+    CURLcode res = curl_easy_perform(curl);
+    if(res != CURLE_OK) {
+        std::cerr << "Błąd transferu: " << curl_easy_strerror(res) << std::endl;
+        return false;
+    }
+
+    fclose(mem_file);
+
+    std::cout << "Saved succesfully to server" << std::endl;
+
+    return true;
+    
+    } 
+    else 
+    {
+        return false;
+    }
+
 }
 
-void runDataRecording(){
+void runDataRecording(CURL *curl){
 
     unsigned int seconds_to_decrease = 0;
 
     while (!saveLocally() && seconds_to_decrease < sensors_update_interval) {
-        std::cout << "Failed to save locally. Trying again...": << std::endl;
+        std::cout << "Failed to save locally. Trying again... ";
+        std::cout << "Seconds to decrease " << seconds_to_decrease << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(10));
         seconds_to_decrease += 10;
     }
 
-    if (!sendToServer()) {
+
+    if (!sendToServer(curl)) {
         records_to_write++;
-        std::cout << "Failed to save on server. Trying in next cycle...": << std::endl;
+        std::cout << "Failed to save on server. Trying in next cycle..." << std::endl;
     } else {
         records_to_write = 0;
     }
