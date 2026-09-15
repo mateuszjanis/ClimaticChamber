@@ -1,10 +1,5 @@
 #include "DataRecording.h"
 
-double temp_mean;
-double hum_mean;
-float pelt_temp_in;
-float pelt_temp_out;
-
 unsigned int records_to_write = 0;
 
 void initializeFile(){
@@ -115,21 +110,25 @@ void runDataRecording(CURL *curl){
 
     unsigned int seconds_to_decrease = 0;
 
+    while(true){
+
     while (!saveLocally() && seconds_to_decrease < sensors_update_interval) {
         std::cout << "Failed to save locally. Trying again... ";
         std::cout << "Seconds to decrease " << seconds_to_decrease << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(10));  // if not succeed then try every 10 sec
         seconds_to_decrease += 10;
     }
 
-
     if (!sendToServer(curl)) {
         records_to_write++;
-        std::cout << "Failed to save on server. Trying in next cycle..." << std::endl;
+        std::cout << "Failed to send server. Trying in next cycle..." << std::endl;
     } else {
         records_to_write = 0;
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval - seconds_to_decrease));
 
+    seconds_to_decrease = 0;
+
+    }
 }
