@@ -1,5 +1,5 @@
 #pragma once
-// #include "ControlSensors.h"
+#include "ControlSensors.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -14,20 +14,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 const std::string data_file_path = "DataRecords/DataRecords.csv";
+const std::string sftp_file_path ="sftp://student.agh.edu.pl/home/imirgrp/matjanis/CHAMBER/Data/ChamberData.csv";
+const std::string user_psswd = "matjanis:Kezi!de5to";
+
 const unsigned int data_record_interval = 60; // seconds
 extern unsigned int records_to_write;
-
-extern double temp_mean;
-extern double hum_mean;
-extern float pelt_temp_in;
-extern float pelt_temp_out;
-
-const int sensors_update_interval = 10;
 
 ////////////////////////////////////////////////////////////////////////////////
 //--------------------------------- FUNCTIONS --------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
-
 
 void initializeFile();
 bool saveLocally();
