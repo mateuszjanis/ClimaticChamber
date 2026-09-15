@@ -1,6 +1,6 @@
 #include "DataRecording.h"
 
-unsigned int recoeds_to_write = 0;
+unsigned int records_to_write = 0;
 
 void initializeFile(){
     
@@ -60,6 +60,8 @@ void runDataRecording(){
     if (!sendToServer()) {
         records_to_write++;
         std::cout << "Failed to save on server. Trying in next cycle...": << std::endl;
+    } else {
+        records_to_write = 0;
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval - seconds_to_decrease));
