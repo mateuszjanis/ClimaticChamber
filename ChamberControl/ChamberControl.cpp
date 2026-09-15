@@ -2,6 +2,7 @@
 #include "DataRecording.h"
 // #include "ControlSensors.h"
 #include <thread>
+#include <curl/curl.h>
 
 #define CHIP_PATH "/dev/gpiochip4"
 #define CONSUMER "chamber_rpi5"
