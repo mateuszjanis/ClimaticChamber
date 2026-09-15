@@ -120,7 +120,9 @@ void initialSensorsReading(){
         temp_down_temp = readSensor(temp_down_path);
         hum_down_temp = readSensor(hum_down_path);
         
-        if(temp_up_temp > 0 && hum_up_temp > 0 && temp_down_temp > 0 && hum_down_temp > 0 && initialPeltierSensorsReading()) sensors_reading_error = false;
+        if(temp_up_temp > 10 && temp_up_temp < 30 && hum_up_temp > 0 && hum_up_temp < 100 && 
+            temp_down_temp > 10 && temp_down_temp < 30 && hum_down_temp > 0 && hum_down_temp < 100 
+            && initialPeltierSensorsReading()) sensors_reading_error = false;
         
         std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
 
