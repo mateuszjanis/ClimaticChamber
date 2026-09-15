@@ -1,6 +1,8 @@
 #include "PeltierController.h"
+#include "DataRecording.h"
 // #include "ControlSensors.h"
 #include <thread>
+#include <curl/curl.h>
 
 #define CHIP_PATH "/dev/gpiochip4"
 #define CONSUMER "chamber_rpi5"
@@ -19,8 +21,18 @@ int main() {
                 .set_output_value(::gpiod::line::value::ACTIVE)
         ).do_request();
 
-    // std::thread sensorsThread(ReciveSensorsData);
-    // std::thread sftpThread(); only sending or also receiving? if only sending, then no need for a thread, just call the function in the main loop
+    // set up SFTP server client
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    CURL *curl = curl_easy_init();
+
+    if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, sftp_file_path );
+        curl_easy_setopt(curl, CURLOPT_USERPWD, user_psswd);
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+    }
+
+    std::thread sftpThread(runDataRecording, curl);
 
     PeltierController peltierController(request, 28);
 

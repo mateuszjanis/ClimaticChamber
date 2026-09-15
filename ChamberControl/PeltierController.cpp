@@ -1,6 +1,6 @@
 #include "PeltierController.h"
 
-const int HEAT_PIN_1 = 24;
+const int HEAT_PIN_1 = 24; 
 const int HEAT_PIN_2 = 27;
 const int COOL_PIN_1 = 23;
 const int COOL_PIN_2 = 17;
