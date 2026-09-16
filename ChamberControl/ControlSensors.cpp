@@ -170,7 +170,7 @@ bool readPeltierSensors(){
     float temp2 = std::strtof(endPtr + 1, nullptr);
     
     auto last_write_time = std::filesystem::last_write_time(peltier_filepath);
-    auto compile_time = std::filesystem::last_write_time(compile_filepath)
+    auto compile_time = std::filesystem::last_write_time(compile_filepath);
     
     bool is_file_current = ( last_write_time > compile_time );
 
