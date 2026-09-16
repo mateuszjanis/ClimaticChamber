@@ -135,7 +135,6 @@ void PeltierController::setMode(enum mode mode){
         }
 }
 
-
 void PeltierController::runTemperatureControl(){
 
         bool sensors_reading_error = updateSensors();
