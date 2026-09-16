@@ -147,7 +147,7 @@ void runDataRecording(CURL *curl){
     }
 
     if (!sendToServer(curl)) {
-        records_to_write++;
+        // records_to_write++;
         std::cout << "Failed to send server. Trying in next cycle..." << std::endl;
     } else {
         // records_to_write = 0;
