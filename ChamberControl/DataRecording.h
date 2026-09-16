@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 const std::string data_file_path = "DataRecords/DataRecords.csv";
-const std::string sftp_file_path ="sftp://student.agh.edu.pl/home/imirgrp/matjanis/CHAMBER/Data/ChamberData.csv";
+const std::string sftp_file_path ="sftp://student.agh.edu.pl/CHAMBER/Data/ChamberData.csv"; // /home/imirgrp/matjanis
 const std::string user_psswd = "matjanis:Kezi!de5to";
 
 const unsigned int data_record_interval = 60; // seconds
