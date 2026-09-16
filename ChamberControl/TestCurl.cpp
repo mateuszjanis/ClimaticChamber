@@ -22,8 +22,7 @@ int main(){
 
     curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
     CURLcode res_exist = curl_easy_perform(curl);
-    CURLcode res_written;
-
+    
     if (res_exist == CURLE_OK){
 
         std::string header = "time, hum, temp, temp_pelt_in, temp_pelt_out\n";
@@ -35,7 +34,7 @@ int main(){
         curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
         curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)header.length());
 
-        res_written = curl_easy_perform(curl);
+        CURLcode res_written = curl_easy_perform(curl);
         if(res_written != CURLE_OK) {
             std::cerr << "Błąd tworzenia pliku: " << curl_easy_strerror(res_written) << std::endl;
         }
@@ -44,7 +43,7 @@ int main(){
 
     }
     else {
-        std::cerr << "Błąd połączenia: " << curl_easy_strerror(res_written) << std::endl;
+        std::cerr << "Błąd połączenia: " << curl_easy_strerror(res_exist) << std::endl;
     }
 
     return 0;
