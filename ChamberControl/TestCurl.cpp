@@ -27,7 +27,7 @@ int main(){
 
         std::string header = "time, hum, temp, temp_pelt_in, temp_pelt_out\n";
         FILE* mem_file = fmemopen((void*)header.c_str(), header.length(), "r");
-        if (!mem_file) return;
+        if (!mem_file) std::cout << "Not a mem file";
 
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
         curl_easy_setopt(curl, CURLOPT_APPEND, 0L);
