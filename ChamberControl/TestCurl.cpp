@@ -22,6 +22,7 @@ int main(){
 
     curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
     CURLcode res_exist = curl_easy_perform(curl);
+    CURLcode res_written;
 
     if (res_exist == CURLE_OK){
 
@@ -34,7 +35,7 @@ int main(){
         curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
         curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)header.length());
 
-        CURLcode res_written = curl_easy_perform(curl);
+        res_written = curl_easy_perform(curl);
         if(res_written != CURLE_OK) {
             std::cerr << "Błąd tworzenia pliku: " << curl_easy_strerror(res_written) << std::endl;
         }
