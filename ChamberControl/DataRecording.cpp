@@ -107,13 +107,14 @@ bool sendToServer(CURL *curl){
     FILE* mem_file = fmemopen((void*)data_line.c_str(), data_line.length(), "r");
     if (!mem_file) return false;
 
+    curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
     curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)data_line.length());
     curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
 
     CURLcode res = curl_easy_perform(curl);
     if(res != CURLE_OK) {
-        std::cerr << "Błąd transferu: " << curl_easy_strerror(res) << std::endl;
+        std::cerr << "if(curl) correct. Błąd transferu: " << curl_easy_strerror(res) << std::endl;
         return false;
     }
 
@@ -139,7 +140,7 @@ void runDataRecording(CURL *curl){
 
     while(true){
 
-    while (!saveLocally() && seconds_to_decrease < sensors_update_interval) {
+    while (!saveLocally() && seconds_to_decrease < data_record_interval) {
         std::cout << "Failed to save locally. Trying again in 10 sec... ";
         std::cout << "Seconds to decrease " << seconds_to_decrease << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(10));  // if not succeed then try every 10 sec
@@ -153,7 +154,7 @@ void runDataRecording(CURL *curl){
         // records_to_write = 0;
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval - seconds_to_decrease));
+    std::this_thread::sleep_for(std::chrono::seconds(data_record_interval - seconds_to_decrease));
 
     seconds_to_decrease = 0;
 

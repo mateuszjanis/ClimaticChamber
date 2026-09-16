@@ -169,6 +169,8 @@ bool readPeltierSensors(){
     float temp1 = std::strtof(sensorsLine.c_str(), &endPtr);
     float temp2 = std::strtof(endPtr + 1, nullptr);
 
+    bool is_file_current = (std::filesystem::last_write_time(peltier_filepath) > std::filesystem::last_write_time(compile_filepath));
+
     if (abs(temp1 - pelt_temp_in) > acceptable_sens_diff || abs(temp2 - pelt_temp_out) > acceptable_sens_diff) {
         std::cout << "Error reading Peltier sensors: " << temp1 << ", " << temp2 << std::endl;
         return true; // Return true to indicate an error

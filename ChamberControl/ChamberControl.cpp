@@ -38,10 +38,13 @@ int main() {
 
         std::cout << "CURL ready!\n";
     }
+    else {
+        std::cout << "CURL wrong!\n";
+    }
+
+    PeltierController peltierController(request, 10, temp_sens, toggle_treshold, fan_treshold);
 
     std::thread sftpThread(runDataRecording, curl);
-
-    PeltierController peltierController(request, 28, temp_sens, toggle_treshold, fan_treshold);
 
     while (true) {
         
