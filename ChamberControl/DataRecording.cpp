@@ -1,19 +1,44 @@
 #include "DataRecording.h"
 
-unsigned int records_to_write = 0;
+// unsigned int records_to_write = 0;
 
-void initializeFile(){
+void initializeFiles(CURL *curl){ // create files locally and on the server if they dont exist
     
-    std::ofstream file(data_file_path);
+    if (access( name.c_str(), F_OK ) == -1){
+     
+        std::ofstream file(data_file_path);
 
-    // Zapisanie danych oddzielonych przecinkami i znakiem nowej linii
-    file << "DATE" << ","
-         << "TIME" << ","
-         << "temp_mean" << ","
-         << "hum_mean" << ","
-         << "pelt_temp_in" << ","
-         << "pelt_temp_out" << "\n";
+        file << "DATE" << ","
+            << "TIME" << ","
+            << "temp_mean" << ","
+            << "hum_mean" << ","
+            << "pelt_temp_in" << ","
+            << "pelt_temp_out" << "\n";
 
+    }
+
+    curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+    CURLcode res_exist = curl_easy_perform(curl);
+
+    if (res_exist == CURLE_OK){
+
+        std::string header = "time, hum, temp, temp_pelt_in, temp_pelt_out\n";
+        FILE* mem_file = fmemopen((void*)header.c_str(), header.length(), "r");
+        if (!mem_file) return;
+
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+        curl_easy_setopt(curl, CURLOPT_APPEND, 0L);
+        curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)header.length());
+
+        CURLcode res_written = curl_easy_perform(curl);
+        if(res_written != CURLE_OK) {
+            std::cerr << "Błąd tworzenia pliku: " << curl_easy_strerror(res_written) << std::endl;
+        }
+
+        fclose(mem_file);
+
+    }
 }
 
 bool saveLocally(){
@@ -108,12 +133,14 @@ bool sendToServer(CURL *curl){
 
 void runDataRecording(CURL *curl){
 
+    initializeFiles(curl);
+
     unsigned int seconds_to_decrease = 0;
 
     while(true){
 
     while (!saveLocally() && seconds_to_decrease < sensors_update_interval) {
-        std::cout << "Failed to save locally. Trying again... ";
+        std::cout << "Failed to save locally. Trying again in 10 sec... ";
         std::cout << "Seconds to decrease " << seconds_to_decrease << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(10));  // if not succeed then try every 10 sec
         seconds_to_decrease += 10;
@@ -123,7 +150,7 @@ void runDataRecording(CURL *curl){
         records_to_write++;
         std::cout << "Failed to send server. Trying in next cycle..." << std::endl;
     } else {
-        records_to_write = 0;
+        // records_to_write = 0;
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval - seconds_to_decrease));
