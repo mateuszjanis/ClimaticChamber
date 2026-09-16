@@ -102,8 +102,7 @@ bool sendToServer(CURL *curl){
     std::to_string(pelt_temp_in) + "," + 
     std::to_string(pelt_temp_out) +"\n";
 
-    // 2. fmemopen: Otwiera string w pamięci RAM jako wirtualny plik tylko do odczytu ("r").
-    // To eliminuje całkowicie potrzebę tworzenia struktury i callbacku.
+    // fmemopen: Otwiera string w pamięci RAM jako wirtualny plik tylko do odczytu ("r").
     FILE* mem_file = fmemopen((void*)data_line.c_str(), data_line.length(), "r");
     if (!mem_file) return false;
     

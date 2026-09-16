@@ -90,6 +90,7 @@ void initialPeltierSensorsReading(){
                     if (temp1 > 0 && temp2 > 0){    // warunek do dodania aby sprawdzic czy aktualne dane
                         peltier_sensors_reading_error = false;
                         std::cout << "YES\n";
+                        break;
                     } 
                     else {
                         std::cout << "NO. Trying again\n";
@@ -138,6 +139,7 @@ void initialSensorsReading(){
            temp_down_temp > 10 && temp_down_temp < 30 && hum_down_temp > 0 && hum_down_temp < 100) {
                 sensors_reading_error = false;
                 std::cout << "YES\n";
+                break;
         }
         else {
             std::cout << "NO. Trying again\n";
