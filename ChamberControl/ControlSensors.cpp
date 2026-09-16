@@ -174,7 +174,7 @@ bool readPeltierSensors(){
     
     bool is_file_current = ( last_write_time > compile_time );
 
-    if (abs(temp1 - pelt_temp_in) > acceptable_sens_diff || abs(temp2 - pelt_temp_out) > acceptable_sens_diff) {
+    if (abs(temp1 - pelt_temp_in) > acceptable_sens_diff || abs(temp2 - pelt_temp_out) > acceptable_sens_diff || !is_file_current) {
         std::cout << "Error reading Peltier sensors: " << temp1 << ", " << temp2 << std::endl;
         return true; // Return true to indicate an error
     } else {
