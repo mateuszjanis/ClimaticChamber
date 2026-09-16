@@ -106,14 +106,15 @@ bool sendToServer(CURL *curl){
     // To eliminuje całkowicie potrzebę tworzenia struktury i callbacku.
     FILE* mem_file = fmemopen((void*)data_line.c_str(), data_line.length(), "r");
     if (!mem_file) return false;
-
+    
+    curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
     curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)data_line.length());
     curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
 
     CURLcode res = curl_easy_perform(curl);
     if(res != CURLE_OK) {
-        std::cerr << "Błąd transferu: " << curl_easy_strerror(res) << std::endl;
+        std::cerr << "if(curl) correct. Błąd transferu: " << curl_easy_strerror(res) << std::endl;
         return false;
     }
 
