@@ -44,9 +44,13 @@ class PeltierController {
 
 public:
 
-    PeltierController(::gpiod::line_request &request, double goal_temp) : request(request), 
-        temp_sensitivity(2.0), temp_diff_toggle_threshold(4.0), temp_diff_fan_threshold(30.0) 
+    PeltierController(::gpiod::line_request &request, double goal_temp, double temp_sens, 
+                    double toggle_treshold, double fan_treshold) : 
+        request(request), temp_sensitivity(temp_sens), temp_diff_toggle_threshold(toggle_treshold), 
+        temp_diff_fan_threshold(fan_treshold) 
     {
+        initialSensorsReading();
+        initialPeltierSensorsReading();
         setTemperatureGoal(goal_temp);
         
         curr_mode = IDLE;
