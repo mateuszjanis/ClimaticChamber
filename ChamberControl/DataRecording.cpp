@@ -30,8 +30,8 @@ bool saveLocally(){
     }
 
     // Zapisanie danych oddzielonych przecinkami i znakiem nowej linii
-    file << time_struct->tm_year + 1900 << ":"
-         << time_struct->tm_mon + 1 << ":"
+    file << time_struct->tm_year + 1900 << "."
+         << time_struct->tm_mon + 1 << "."
          << time_struct->tm_mday << " "
          << time_struct->tm_hour << ":"
          << time_struct->tm_min << ":"
@@ -57,6 +57,43 @@ bool saveLocally(){
 
 }
 
+void sendImage(CURL *curl){
+
+    std::string image_file_path = findImageToSend(); // funkcja znajdywania ostatniego zdjęcia
+
+    FILE* file = fopen(image_dir_path + image_file_path, "rb");      // Otwieramy lokalny plik ze zdjęciem w trybie odczytu binarnego ("rb")
+    
+    if (!file) {                                                     // Sprawdzamy, czy wystąpił problem z otwarciem pliku (np. nie istnieje)
+        std::cerr << "Błąd: nie można otworzyć pliku!" << '\n';      // Wypisujemy komunikat o błędzie na standardowe wyjście błędów
+        return;                                                      // Przerywamy działanie programu i zwracamy kod błędu 1
+    }                                                                // Zamykamy blok instrukcji warunkowej sprawdzającej plik
+
+    struct stat file_info;                                           // Tworzymy strukturę, która przechowa szczegółowe dane o naszym pliku
+    fstat(fileno(file), &file_info);                                 // Pobieramy informacje o pliku na podstawie jego deskryptora (w tym rozmiar)
+
+    if (curl) {                                                      // Sprawdzamy, czy inicjalizacja sesji CURL zakończyła się sukcesem
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);                  // Informujemy bibliotekę CURL, że naszym celem jest wysłanie pliku (upload)
+        curl_easy_setopt(curl, CURLOPT_READDATA, file);              // Wskazujemy wskaźnik na nasz otwarty plik, z którego CURL ma czytać dane
+        
+        // Zabezpieczenie rozmiaru pliku (wymagane przez libcurl dla płynnego uploadu)
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size); // Ustawiamy dokładny rozmiar pliku do wysłania
+        // curl_easy_setopt(curl, CURLOPT_SSH_AUTH_TYPES, CURLSSH_AUTH_PASSWORD);           // Konfigurujemy typ autoryzacji SSH/SFTP na logowanie hasłem
+
+        CURLcode res = curl_easy_perform(curl);                      // Uruchamiamy właściwy transfer pliku i zapisujemy kod wyniku do zmiennej "res"
+
+        if (res != CURLE_OK) {                                       // Sprawdzamy, czy zwrócony kod wyniku oznacza jakikolwiek błąd transferu
+            std::cerr << "Błąd przesyłania: " << curl_easy_strerror(res) << '\n'; // Wyświetlamy tekstowy opis błędu wygenerowany przez CURL
+        } else {                                                     // W przeciwnym wypadku (jeśli kod wyniku to CURLE_OK, czyli sukces)
+            std::cout << "Zdjęcie zostało pomyślnie wysłane!" << '\n'; // Wyświetlamy radosny komunikat informujący o udanym przesłaniu pliku
+        }                                                            // Zamykamy blok instrukcji warunkowej obsługującej wynik
+        
+        curl_easy_cleanup(curl);                                     // Sprzątamy i zwalniamy pamięć/zasoby przypisane do naszej sesji CURL
+    }                                                                // Zamykamy blok instrukcji warunkowej dla inicjalizacji uchwytu CURL
+
+    fclose(file);                                                    // Zamykamy plik lokalny, żeby zwolnić zasoby systemowe Raspberry Pi
+    curl_global_cleanup();
+}
+
 bool sendToServer(CURL *curl){
 
     if(curl){
@@ -66,8 +103,8 @@ bool sendToServer(CURL *curl){
     struct tm *time_struct = std::localtime(&now);
 
     std::string data_line = 
-    std::to_string(time_struct->tm_year + 1900) + ":" +
-    std::to_string(time_struct->tm_mon + 1) + ":" +
+    std::to_string(time_struct->tm_year + 1900) + "." +
+    std::to_string(time_struct->tm_mon + 1) + "." +
     std::to_string(time_struct->tm_mday) + " " +
     std::to_string(time_struct->tm_hour) + ":" +
     std::to_string(time_struct->tm_min) + ":" +
@@ -109,6 +146,7 @@ bool sendToServer(CURL *curl){
 void runDataRecording(CURL *curl){
 
     unsigned int seconds_to_decrease = 0;
+    unsigned int sending_cycles = 0;
 
     while(true){
 
@@ -129,6 +167,9 @@ void runDataRecording(CURL *curl){
     std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval - seconds_to_decrease));
 
     seconds_to_decrease = 0;
+    sending_cycles++;
+
+    if (sending_cycles == cycles_to_send_image) sendImage(curl);
 
     }
 }
