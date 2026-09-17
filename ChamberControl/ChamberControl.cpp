@@ -9,6 +9,10 @@
 
 int main() {
 
+    double temp_sens = 2.0; // degrees celcius
+    double toggle_treshold = 4; //degrees celcius
+    double fan_treshold = 30; //degrees celcius
+    
     // set up GPIO chip and request lines
 
     auto chip = ::gpiod::chip(CHIP_PATH);
@@ -21,6 +25,8 @@ int main() {
                 .set_output_value(::gpiod::line::value::ACTIVE)
         ).do_request();
 
+    std::cout << "Pins ready!\n";
+
     // set up SFTP server client
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -29,16 +35,19 @@ int main() {
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, sftp_file_path );
         curl_easy_setopt(curl, CURLOPT_USERPWD, user_psswd);
-        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+
+        std::cout << "CURL ready!\n";
     }
+    else {
+        std::cout << "CURL wrong!\n";
+    }
+
+    PeltierController peltierController(request, 10, temp_sens, toggle_treshold, fan_treshold);
 
     std::thread sftpThread(runDataRecording, curl);
 
-    PeltierController peltierController(request, 18.0);
-
     while (true) {
-
-        printSensors();
+        
         peltierController.runTemperatureControl();
         
     }
