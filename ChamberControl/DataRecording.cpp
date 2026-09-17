@@ -8,11 +8,11 @@ void initializeFiles(CURL *curl){ // create files locally and on the server if t
      
         std::ofstream file(data_file_path);
 
-        file << "DATE" << ","
-            << "TIME" << ","
-            << "temp_mean" << ","
-            << "hum_mean" << ","
-            << "pelt_temp_in" << ","
+        file << "DATE" << ";"
+            << "TIME" << ";"
+            << "temp_mean" << ";"
+            << "hum_mean" << ";"
+            << "pelt_temp_in" << ";"
             << "pelt_temp_out" << "\n";
 
     }
@@ -22,7 +22,7 @@ void initializeFiles(CURL *curl){ // create files locally and on the server if t
 
     if (res_exist == CURLE_OK){
 
-        std::string header = "time, hum, temp, temp_pelt_in, temp_pelt_out\n";
+        std::string header = "time; hum; temp; temp_pelt_in; temp_pelt_out\n";
         FILE* mem_file = fmemopen((void*)header.c_str(), header.length(), "r");
         if (!mem_file) return;
 
@@ -60,10 +60,10 @@ bool saveLocally(){
          << time_struct->tm_mday << " "
          << time_struct->tm_hour << ":"
          << time_struct->tm_min << ":"
-         << time_struct->tm_sec << ","
-         << temp_mean << ","
-         << hum_mean << ","
-         << pelt_temp_in << ","
+         << time_struct->tm_sec << ";"
+         << temp_mean << ";"
+         << hum_mean << ";"
+         << pelt_temp_in << ";"
          << pelt_temp_out << "\n";
 
 
@@ -96,10 +96,10 @@ bool sendToServer(CURL *curl){
     std::to_string(time_struct->tm_mday) + " " +
     std::to_string(time_struct->tm_hour) + ":" +
     std::to_string(time_struct->tm_min) + ":" +
-    std::to_string(time_struct->tm_sec) + "," +
-    std::to_string(hum_mean) + "," + 
-    std::to_string(temp_mean) + "," + 
-    std::to_string(pelt_temp_in) + "," + 
+    std::to_string(time_struct->tm_sec) + ";" +
+    std::to_string(hum_mean) + ";" + 
+    std::to_string(temp_mean) + ";" + 
+    std::to_string(pelt_temp_in) + ";" + 
     std::to_string(pelt_temp_out) +"\n";
 
     // fmemopen: Otwiera string w pamięci RAM jako wirtualny plik tylko do odczytu ("r").
