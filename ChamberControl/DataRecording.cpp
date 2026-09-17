@@ -1,5 +1,7 @@
 #include "DataRecording.h"
 
+// add inotify watch to detect when file was opened, written, created etc.
+
 // unsigned int records_to_write = 0;
 
 void initializeFiles(CURL *curl){ // create files locally and on the server if they dont exist
