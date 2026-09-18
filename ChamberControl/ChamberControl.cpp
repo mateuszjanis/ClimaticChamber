@@ -7,11 +7,14 @@
 #define CHIP_PATH "/dev/gpiochip4"
 #define CONSUMER "chamber_rpi5"
 
+const char* sftp_file_path ="sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv";
+const char* user_psswd = "matjanis:Kezi!de5to";
+
 int main() {
 
     double temp_sens = 2.0; // degrees celcius
     double toggle_treshold = 4; //degrees celcius
-    double fan_treshold = 30; //degrees celcius
+    double fan_treshold = 25; //degrees celcius
     
     // set up GPIO chip and request lines
 
@@ -42,7 +45,7 @@ int main() {
         std::cout << "CURL wrong!\n";
     }
 
-    PeltierController peltierController(request, 10, temp_sens, toggle_treshold, fan_treshold);
+    PeltierController peltierController(request, 15, temp_sens, toggle_treshold, fan_treshold);
 
     std::thread sftpThread(runDataRecording, curl);
 
