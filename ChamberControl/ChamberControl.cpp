@@ -7,7 +7,7 @@
 #define CHIP_PATH "/dev/gpiochip4"
 #define CONSUMER "chamber_rpi5"
 
-const char* sftp_file_path ="sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv";
+const char* sftp_file_path = "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv";
 const char* user_psswd = "matjanis:Kezi!de5to";
 
 int main() {
