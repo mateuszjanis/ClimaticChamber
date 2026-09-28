@@ -14,10 +14,9 @@
 //--------------------------------- VARIABLES --------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
 
-const std::string data_file_path = "DataRecords/DataRecords.csv";
-const std::string sftp_file_path ="sftp://student.agh.edu.pl/public_html/ChamberData.csv"; // /home/imirgrp/matjanis
-const std::string user_psswd = "matjanis:Kezi!de5to";
-const std::string image_dir_path = "Images/";
+const std::string data_file_path = "../Data/DataRecords.csv";
+extern const char* sftp_file_path;
+extern const char* user_psswd;
 
 const unsigned int data_record_interval = 60; // seconds
 const unsigned int cycles_to_send_image = 30; // half an hour

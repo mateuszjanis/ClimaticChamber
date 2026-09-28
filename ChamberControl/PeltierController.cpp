@@ -1,10 +1,10 @@
 #include "PeltierController.h"
 
-const int HEAT_PIN_1 = 24; 
-const int HEAT_PIN_2 = 27;
-const int COOL_PIN_1 = 23;
-const int COOL_PIN_2 = 17;
-const int FAN_PIN = 16;
+const int HEAT_PIN_1 = 17; 
+const int HEAT_PIN_2 = 23;
+const int COOL_PIN_1 = 24;
+const int COOL_PIN_2 = 27;
+const int FAN_PIN = 25;
 
 gpiod::line::offsets COOL_OFFSETS = {COOL_PIN_1, COOL_PIN_2};
 gpiod::line::offsets HEAT_OFFSETS = {HEAT_PIN_1, HEAT_PIN_2};

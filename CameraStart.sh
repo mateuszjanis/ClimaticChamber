@@ -1,10 +1,8 @@
 #!/bin/bash
 
-FOLDER="$HOME/Documents/images"
-
-sudo openvpn Downloads/VPN-AGH.2026.ovpn --daemon
-lftp sftp://matjanis@student.agh.edu.pl
-
+FOLDER="Images"
+IMAGE_INTERVAL=60
+ 
 echo "Rozpoczęcie wykonywania zdjęć"
 echo "-----------------------------"
 
@@ -14,9 +12,17 @@ while true; do
 
 	echo "[$(date +%T)] Wykonanie zdjęcia: $PLIK"
 
-	rpicam-still --output "$PLIK" 
+	pinctrl set 16 dl
 
-	sleep 10
+	sleep 1
+
+	rpicam-still -n --output "$PLIK" > /dev/null 2>&1 
+
+	sleep 1
+	
+	pinctrl set 16 dh
+
+	sleep $IMAGE_INTERVAL
 done
 
 
