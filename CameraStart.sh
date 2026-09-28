@@ -12,7 +12,15 @@ while true; do
 
 	echo "[$(date +%T)] Wykonanie zdjęcia: $PLIK"
 
+	pinctrl set 16 dl
+
+	sleep 1
+
 	rpicam-still -n --output "$PLIK" > /dev/null 2>&1 
+
+	sleep 1
+	
+	pinctrl set 16 dh
 
 	sleep $IMAGE_INTERVAL
 done
