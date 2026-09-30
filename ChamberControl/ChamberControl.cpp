@@ -1,23 +1,20 @@
 #include "PeltierController.h"
-#include "DataRecording.h"
+#include "DataHandler.h"
 #include <thread>
+#include <nlohmann/json.hpp>
 
 #define CHIP_PATH "/dev/gpiochip4"
 #define CONSUMER "chamber_rpi5"
 
-const char* sftp_file_path = "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv";
-const char* sftp_passwd = "matjanis:Kezi!de5to";
+// const char* sftp_file_path = "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv";
+// const char* sftp_passwd = "matjanis:Kezi!de5to";
 
-// void applyConfiguration();
+void parseConfigurationFile(nlohmann::json &configuration_json); // add reading .env file
 // void createConfigurationESP();
 
 int main() {
-
-    // applyConfiguration();
-
-    double temp_sens = 2.0; // degrees celcius
-    double toggle_treshold = 4; //degrees celcius
-    double fan_treshold = 25; //degrees celcius
+    nlohmann::json configuration_json;
+    parseConfigurationFile(configuration_json);
     
     // set up GPIO chip and request lines - przenieść do konstruktora PeltierController
 
@@ -34,23 +31,24 @@ int main() {
     std::cout << "Pins ready!\n";
 
     // set up SFTP server client
+    // 
+    // curl_global_init(CURL_GLOBAL_DEFAULT);
+    // CURL *curl = curl_easy_init();
+    // 
+    // if(curl) {
+    //     curl_easy_setopt(curl, CURLOPT_URL, sftp_file_path );
+    //     curl_easy_setopt(curl, CURLOPT_USERPWD, sftp_passwd);
+    //
+    //     std::cout << "CURL ready!\n";
+    // }
+    // else {
+    //     std::cout << "CURL wrong!\n";
+    // }
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    CURL *curl = curl_easy_init();
+    PeltierController peltierController(request, configuration_json);
+    DataHandler dataHandler(configuration_json);
 
-    if(curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, sftp_file_path );
-        curl_easy_setopt(curl, CURLOPT_USERPWD, sftp_passwd);
-
-        std::cout << "CURL ready!\n";
-    }
-    else {
-        std::cout << "CURL wrong!\n";
-    }
-
-    PeltierController peltierController(request, 15, temp_sens, toggle_treshold, fan_treshold);
-
-    std::thread sftpThread(runDataRecording, curl);
+    std::thread sftpThread(dataHandler.run);
 
     while (true) {
         
@@ -61,12 +59,18 @@ int main() {
     return 0;
 }
 
-/*
+void parseConfigurationFile(){
+    std::fstream configuration_file;
+    configuration_file.open(R"(c:\test\file.json)", std::ios::in);
 
-void applyConfiguration(){
-    
+    configuration_json{nlohmann::json::parse(configuration_file)};
+
+    // parsing .env file here
+
+    std::cout << "Configuration files parsed!\n";
 }
 
+/*
 void createConfigurationESP(){
 
 }

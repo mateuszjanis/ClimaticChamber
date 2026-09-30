@@ -134,7 +134,7 @@ void sendImage(CURL *curl){
         if (res != CURLE_OK) {
             std::cerr << "Błąd przesyłania: " << curl_easy_strerror(res) << '\n';
             std::cout << "Zdjęcie zostało pomyślnie wysłane!" << '\n';
-
+        }
     }
     
     fclose(file);

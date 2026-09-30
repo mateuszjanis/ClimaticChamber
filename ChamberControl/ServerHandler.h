@@ -10,27 +10,18 @@
 #include <ctime>
 #include <sys/stat.h>
 
-class ServerFilesHandler{
+class ServerHandler{
 
     CURL *curl;
 
-    const std::string climate_data_file_path;
-    const std::string gas_data_file_path;
-    const std::string image_dir_path;
-
-    const unsigned int climate_data_record_interval; // może byc kilka
-    const unsigned int gas_data_record_interval;
-    const unsigned int image_record_interval;
-
-    std::string data_payload;
+    // std::string gas_data_payload;
+    std::string climate_data_payload;
 
 public:
 
-    ServerFilesHandler(){
-        
-        data_file_path          // 
-        image_dir_path          // get from json file
-        data_record_interval    //
+    ServerHandler(const char* sftp_path) : climate_data_payload(""), sftp_file_path(sftp_path) {
+
+        const char* sftp_passwd = parseENV();
 
         curl_global_init(CURL_GLOBAL_DEFAULT);
         curl = curl_easy_init(); // może musi być stworzone w main
@@ -45,26 +36,22 @@ public:
             if(result != CURLE_OK)
                 printf("CURL error: %s\n", curl_easy_strerror(result));
         }
-
-
     }
-
-    ~ServerFilesHandler(){
+    ~ServerHandler(){
         curl_easy_cleanup();
     }
 
-    void appendData();
+    bool appendClimateData();
+    // bool appendGasData();
     bool sendImage();
+    // bool sendState();
 
 private:
 
-    bool sendState();
-    bool createNewFile();
-    void actualizePayload();
-    bool appendClimateData();
-    bool appendGasData();
+    // bool createNewFile();
+    void actualizeClimatePayload(std::string payload);
+    // void actualizeGasPayload(std::string payload);
     std::string findImageToSend();
+    const char* parseENV();
 
 }
-
-void runDataRecording();  
