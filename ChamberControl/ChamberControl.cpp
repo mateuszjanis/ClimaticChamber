@@ -1,22 +1,25 @@
 #include "PeltierController.h"
 #include "DataRecording.h"
-// #include "ControlSensors.h"
 #include <thread>
-#include <curl/curl.h>
 
 #define CHIP_PATH "/dev/gpiochip4"
 #define CONSUMER "chamber_rpi5"
 
 const char* sftp_file_path = "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv";
-const char* user_psswd = "matjanis:Kezi!de5to";
+const char* sftp_passwd = "matjanis:Kezi!de5to";
+
+// void applyConfiguration();
+// void createConfigurationESP();
 
 int main() {
+
+    // applyConfiguration();
 
     double temp_sens = 2.0; // degrees celcius
     double toggle_treshold = 4; //degrees celcius
     double fan_treshold = 25; //degrees celcius
     
-    // set up GPIO chip and request lines
+    // set up GPIO chip and request lines - przenieść do konstruktora PeltierController
 
     auto chip = ::gpiod::chip(CHIP_PATH);
     auto request = chip.prepare_request()
@@ -37,7 +40,7 @@ int main() {
 
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, sftp_file_path );
-        curl_easy_setopt(curl, CURLOPT_USERPWD, user_psswd);
+        curl_easy_setopt(curl, CURLOPT_USERPWD, sftp_passwd);
 
         std::cout << "CURL ready!\n";
     }
@@ -57,3 +60,15 @@ int main() {
 
     return 0;
 }
+
+/*
+
+void applyConfiguration(){
+    
+}
+
+void createConfigurationESP(){
+
+}
+
+*/

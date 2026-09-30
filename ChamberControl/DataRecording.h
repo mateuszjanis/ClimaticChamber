@@ -15,8 +15,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 const std::string data_file_path = "../Data/DataRecords.csv";
+const std::string image_dir_path = "../Images";
 extern const char* sftp_file_path;
-extern const char* user_psswd;
+extern const char* sftp_passwd;
 
 const unsigned int data_record_interval = 60; // seconds
 const unsigned int cycles_to_send_image = 30; // half an hour
@@ -29,6 +30,8 @@ const unsigned int cycles_to_send_image = 30; // half an hour
 void initializeFile();
 bool saveLocally();
 void sendImage(CURL *curl);
+std::string getCSVPayload();
+std::string findImageToSend();
 
 bool sendToServer(CURL *curl);
 

@@ -4,7 +4,7 @@
 
 // unsigned int records_to_write = 0;
 
-void initializeFiles(CURL *curl){ // create files locally and on the server if they dont exist
+void initializeFiles(CURL *curl){ // create files locally and on the server if they don't exist
     
     if (access( data_file_path.c_str(), F_OK ) == -1){
      
@@ -43,111 +43,117 @@ void initializeFiles(CURL *curl){ // create files locally and on the server if t
     }
 }
 
-bool saveLocally(){
+std::string getCSVPayload(){
 
     time_t now = std::time(nullptr);
     struct tm *time_struct = std::localtime(&now);
 
-    // Otwarcie pliku w trybie dopisywania (append)
-    std::ofstream file(data_file_path, std::ios::app);
+    // localtime_r(&now, &time_struct);
 
-    // Sprawdzenie, czy plik został poprawnie otwarty
-    if (!file.is_open()) {
+    char time_buffer[25];
+    std::strftime(time_buffer, sizeof(time_buffer), "%Y.%m.%d %H:%M:%S", time_struct);
+    
+    char payload_buffer[128];
+
+    std::snprintf(payload_buffer, sizeof(payload_buffer), "%s;%.2f;%.2f;%.2f;%.2f\n", 
+                time_buffer, 
+                temp_mean, 
+                hum_mean, 
+                pelt_temp_in, 
+                pelt_temp_out);
+
+    return std::string(payload_buffer);
+
+}
+
+std::string findImageToSend()
+{
+
+    namespace fs = std::filesystem;
+
+    if (!fs::exists(image_dir_path) || !fs::is_directory(image_dir_path)) {
+        return "";
+    }
+
+    std::string latestImagePath = "";
+    // Ustawiamy najmniejszy możliwy czas jako punkt startowy
+    auto latestTime = fs::file_time_type::min(); 
+
+    for (const auto& entry : fs::directory_iterator(image_dir_path)) {
+        
+        auto fileTime = fs::last_write_time(entry);
+        
+        if (fileTime > latestTime) {
+            latestTime = fileTime;
+            latestImagePath = entry.path().string();
+        }
+
+    }
+
+    return latestImagePath;
+
+}
+
+bool saveLocally(){
+    
+    std::string payload = getCSVPayload();
+
+    FILE *file = std::fopen(data_file_path.c_str(), "a");
+
+    if (file == nullptr) {
         return false;
     }
 
-    // Zapisanie danych oddzielonych przecinkami i znakiem nowej linii
-    file << time_struct->tm_year + 1900 << "."
-         << time_struct->tm_mon + 1 << "."
-         << time_struct->tm_mday << " "
-         << time_struct->tm_hour << ":"
-         << time_struct->tm_min << ":"
-         << time_struct->tm_sec << ";"
-         << temp_mean << ";"
-         << hum_mean << ";"
-         << pelt_temp_in << ";"
-         << pelt_temp_out << "\n";
+    std::fprintf(file, payload.c_str());
 
-
-
-    // Zwraca true, jeśli nie wystąpiły żadne błędy zapisu (np. brak miejsca na dysku)
-    if(file.good()){
-
-        std::cout << "Saved succesfully" << std::endl;
-        return true;
-
-    } else {
-
-        return false;
-
-    }
+    std::fclose(file);
+    return true;
 
 }
 
 void sendImage(CURL *curl){
 
-    std::string image_file_path = findImageToSend(); // funkcja znajdywania ostatniego zdjęcia
+    std::string image_file_path = findImageToSend();
 
-    FILE* file = fopen(image_dir_path + image_file_path, "rb");      // Otwieramy lokalny plik ze zdjęciem w trybie odczytu binarnego ("rb")
+    FILE* file = fopen(image_dir_path + image_file_path, "rb");
+
+    if (!file) {        
+        std::cerr << "Błąd: nie można otworzyć pliku!" << '\n';
+        return;
+    }
+
+    struct stat file_info;         
+    fstat(fileno(file), &file_info);
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+        curl_easy_setopt(curl, CURLOPT_READDATA, file);
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
+
+        CURLcode res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK) {
+            std::cerr << "Błąd przesyłania: " << curl_easy_strerror(res) << '\n';
+            std::cout << "Zdjęcie zostało pomyślnie wysłane!" << '\n';
+
+    }
     
-    if (!file) {                                                     // Sprawdzamy, czy wystąpił problem z otwarciem pliku (np. nie istnieje)
-        std::cerr << "Błąd: nie można otworzyć pliku!" << '\n';      // Wypisujemy komunikat o błędzie na standardowe wyjście błędów
-        return;                                                      // Przerywamy działanie programu i zwracamy kod błędu 1
-    }                                                                // Zamykamy blok instrukcji warunkowej sprawdzającej plik
+    fclose(file);
 
-    struct stat file_info;                                           // Tworzymy strukturę, która przechowa szczegółowe dane o naszym pliku
-    fstat(fileno(file), &file_info);                                 // Pobieramy informacje o pliku na podstawie jego deskryptora (w tym rozmiar)
-
-    if (curl) {                                                      // Sprawdzamy, czy inicjalizacja sesji CURL zakończyła się sukcesem
-        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);                  // Informujemy bibliotekę CURL, że naszym celem jest wysłanie pliku (upload)
-        curl_easy_setopt(curl, CURLOPT_READDATA, file);              // Wskazujemy wskaźnik na nasz otwarty plik, z którego CURL ma czytać dane
-        
-        // Zabezpieczenie rozmiaru pliku (wymagane przez libcurl dla płynnego uploadu)
-        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size); // Ustawiamy dokładny rozmiar pliku do wysłania
-        // curl_easy_setopt(curl, CURLOPT_SSH_AUTH_TYPES, CURLSSH_AUTH_PASSWORD);           // Konfigurujemy typ autoryzacji SSH/SFTP na logowanie hasłem
-
-        CURLcode res = curl_easy_perform(curl);                      // Uruchamiamy właściwy transfer pliku i zapisujemy kod wyniku do zmiennej "res"
-
-        if (res != CURLE_OK) {                                       // Sprawdzamy, czy zwrócony kod wyniku oznacza jakikolwiek błąd transferu
-            std::cerr << "Błąd przesyłania: " << curl_easy_strerror(res) << '\n'; // Wyświetlamy tekstowy opis błędu wygenerowany przez CURL
-        } else {                                                     // W przeciwnym wypadku (jeśli kod wyniku to CURLE_OK, czyli sukces)
-            std::cout << "Zdjęcie zostało pomyślnie wysłane!" << '\n'; // Wyświetlamy radosny komunikat informujący o udanym przesłaniu pliku
-        }                                                            // Zamykamy blok instrukcji warunkowej obsługującej wynik
-        
-        curl_easy_cleanup(curl);                                     // Sprzątamy i zwalniamy pamięć/zasoby przypisane do naszej sesji CURL
-    }                                                                // Zamykamy blok instrukcji warunkowej dla inicjalizacji uchwytu CURL
-
-    fclose(file);                                                    // Zamykamy plik lokalny, żeby zwolnić zasoby systemowe Raspberry Pi
-    curl_global_cleanup();
 }
 
 bool sendToServer(CURL *curl){
 
     if(curl){
-    // do dopisania wczytywanie niezapisanych danych
-    
-    time_t now = std::time(nullptr);
-    struct tm *time_struct = std::localtime(&now);
 
-    std::string data_line = 
-    std::to_string(time_struct->tm_year + 1900) + "." +
-    std::to_string(time_struct->tm_mon + 1) + "." +
-    std::to_string(time_struct->tm_mday) + " " +
-    std::to_string(time_struct->tm_hour) + ":" +
-    std::to_string(time_struct->tm_min) + ":" +
-    std::to_string(time_struct->tm_sec) + ";" +
-    std::to_string(hum_mean) + ";" + 
-    std::to_string(temp_mean) + ";" + 
-    std::to_string(pelt_temp_in) + ";" + 
-    std::to_string(pelt_temp_out) +"\n";
+    std::string payload = getCSVPayload();
 
     // fmemopen: Otwiera string w pamięci RAM jako wirtualny plik tylko do odczytu ("r").
-    FILE* mem_file = fmemopen((void*)data_line.c_str(), data_line.length(), "r");
+    FILE* mem_file = fmemopen((void*)payload.c_str(), payload.length(), "r");
     if (!mem_file) return false;
     
     curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
     curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
-    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)data_line.length());
+    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)payload.length());
     curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
 
     CURLcode res = curl_easy_perform(curl);
@@ -187,10 +193,7 @@ void runDataRecording(CURL *curl){
     }
 
     if (!sendToServer(curl)) {
-        // records_to_write++;
         std::cout << "Failed to send server. Trying in next cycle..." << std::endl;
-    } else {
-        // records_to_write = 0;
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(data_record_interval - seconds_to_decrease));
