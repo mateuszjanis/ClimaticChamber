@@ -176,12 +176,13 @@ bool readPeltierSensors(){
     
     bool is_file_current = ( last_write_time > compile_time );
 
-    if (abs(temp1 - pelt_temp_in) > acceptable_sens_diff || abs(temp2 - pelt_temp_out) > acceptable_sens_diff || !is_file_current) {
+    if (std::abs(temp1 - pelt_temp_in) > acceptable_sens_diff || std::abs(temp2 - pelt_temp_out) > acceptable_sens_diff || !is_file_current) {
         std::cout << "Error reading Peltier sensors: " << temp1 << ", " << temp2 << std::endl;
         return true; // Return true to indicate an error
     } else {
         pelt_temp_in = temp1;
         pelt_temp_out = temp2;
+        std::cout << "Peltier sensors read correctly: " << std::endl;
         return false; // Return false to indicate successful reading
     }
     
@@ -198,9 +199,9 @@ bool updateSensors() {
     double temp_down_temp = readSensor(temp_down_path);
     double hum_down_temp = readSensor(hum_down_path);
 
-    if (abs(temp_up_temp - temp_up) > acceptable_sens_diff || abs(hum_up_temp - hum_up) > acceptable_sens_diff) {
+    if (std::abs(temp_up_temp - temp_up) > acceptable_sens_diff || std::abs(hum_up_temp - hum_up) > acceptable_sens_diff) {
         sensors_reading_error =  true; // error
-        std::cout << "Wrong DHT up reading: \n";
+        std::cout << "Wrong DHT up reading\n";
         // std::cout << "temp_up_temp: " << temp_up_temp << " vs temp_up: " << temp_up << std::endl;
         // std::cout << "hum_up_temp: " << hum_up_temp << " vs hum_up: " << hum_up << std::endl;
     } else {
@@ -210,7 +211,7 @@ bool updateSensors() {
         std::cout << "Correct DHT up reading\n";
     }
 
-    if (abs(temp_down_temp - temp_down) > acceptable_sens_diff || abs(hum_down_temp - hum_down) > acceptable_sens_diff) {
+    if (std::abs(temp_down_temp - temp_down) > acceptable_sens_diff || std::abs(hum_down_temp - hum_down) > acceptable_sens_diff) {
         sensors_reading_error =  true; // error
         std::cout << "Wrong DHT down reading\n";
         // std::cout << "temp_up_temp: " << temp_up_temp << " vs temp_up: " << temp_up << std::endl;

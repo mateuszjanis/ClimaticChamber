@@ -13,6 +13,7 @@ bool ServerHandler::createNewFile(){
 void ServerHandler::actualizeClimatePayload(std::string payload){
 
     climate_data_payload.append(payload);
+    std::cout << "[SERVER] Climate payload actualized: " << climate_data_payload << std::endl;
 
 }
 /*
@@ -30,20 +31,24 @@ bool ServerHandler::appendClimateData(){
     FILE* mem_file = fmemopen((void*)climate_data_payload.c_str(), climate_data_payload.length(), "r");
     if (!mem_file) return false;
     
+    curl_easy_setopt(curl, CURLOPT_URL, sftp_file_path.c_str() );
+    std::cout << "[SERVER] sftp_file_path: " << sftp_file_path << std::endl;
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
     curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)climate_data_payload.length());
     curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
 
     CURLcode res = curl_easy_perform(curl);
+    
     if(res != CURLE_OK) {
-        std::cerr << "if(curl) correct. Błąd transferu: " << curl_easy_strerror(res) << std::endl;
+        std::cerr << "[SERVER]  if(curl) correct. Błąd transferu: " << curl_easy_strerror(res) << std::endl;
         return false;
     }
 
     fclose(mem_file);
 
-    std::cout << "Saved succesfully to server" << std::endl;
+    std::cout << "[SERVER]  Saved climate data succesfully to server" << std::endl;
     climate_data_payload.clear();
 
     return true;
@@ -95,16 +100,22 @@ bool ServerHandler::sendImage(){
 
     std::string image_file_path = findImageToSend();
 
-    FILE* file = fopen(image_dir_path + image_file_path, "rb");
+	std::cout << "[SERVER] Sending to: " << (sftp_image_path + image_file_path) << std::endl;
+
+    FILE* file = fopen((image_dir_path + image_file_path).c_str(), "rb");
 
     if (!file) {        
-        std::cerr << "Błąd: nie można otworzyć pliku!" << '\n';
-        return;
+        std::cerr << "[SERVER] Błąd: nie można otworzyć pliku!" << '\n';
+        return false;
     }
 
     struct stat file_info;         
     fstat(fileno(file), &file_info);
+    
     if (curl) {
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+		curl_easy_setopt(curl, CURLOPT_URL, (sftp_image_path + image_file_path).c_str() );
+		// std::cout << "[SERVER] sftp_image_path: " << sftp_image_path << std::endl;
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
         curl_easy_setopt(curl, CURLOPT_READDATA, file);
         curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
@@ -112,14 +123,16 @@ bool ServerHandler::sendImage(){
         CURLcode res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
-            std::cerr << "Błąd przesyłania: " << curl_easy_strerror(res) << '\n';
+            std::cerr << "[SERVER] Błąd przesyłania: " << curl_easy_strerror(res) << '\n';
+            return false;
         }
         else {
-             std::cout << "Zdjęcie zostało pomyślnie wysłane!" << '\n';
+             std::cout << "[SERVER] Zdjęcie zostało pomyślnie wysłane!" << '\n';
         }
     }
     
     fclose(file);
+    return true;    
 
 }
 
@@ -145,17 +158,21 @@ std::string ServerHandler::findImageToSend(){
         }
 
     }
+    
+    latestImagePath.erase(0, image_dir_path.length() - 1);
+    
+    std::cout << "[SERVER] Found last image path: " << latestImagePath << std::endl;
 
     return latestImagePath;
 }
 
-const char* ServerHandler::parseENV(){
+std::string ServerHandler::parseENV(){
 
     const std::string& filePath = "../.env";
     std::ifstream file(filePath);
     
     if (!file.is_open()) {
-        std::cerr << "Błąd: Nie można otworzyć pliku środowiskowego: " << filePath << std::endl;
+        std::cerr << "[SERVER] Błąd: Nie można otworzyć pliku środowiskowego: " << filePath << std::endl;
         return "";
     }
 

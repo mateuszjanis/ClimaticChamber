@@ -9,8 +9,8 @@
     "temp_diff_fan_threshold": 25,
     "acceptable_sens_diff": 10.0,
     "sensors_update_interval": 10,
-    "climate_data_record_interval": 60,
-    "image_record_interval": 120
+    "climate_data_record_interval": 1,
+    "image_record_interval": 2
 },
 "paths": {
     "temp_up_path": "/sys/bus/iio/devices/iio:device0/in_temp_input",
@@ -19,6 +19,8 @@
     "hum_down_path": "/sys/bus/iio/devices/iio:device1/in_humidityrelative_input",
     "climate_data_file_path": "../Data/DataRecords.csv",
     "image_dir_path": "../Images",
-    "sftp_file_path": "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv"
+    "sftp_path": "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/",
+    "sftp_file_path": "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv",
+    "sftp_image_path": "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/Images"
 }
 }

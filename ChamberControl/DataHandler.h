@@ -21,22 +21,21 @@ class DataHandler{
     // const std::chrono::minutes gas_data_record_interval;
     const std::chrono::minutes image_record_interval;
 
-    ServerHandler ServerHandler;
+    ServerHandler serverSFTP;
 
 public:
 
-    DataHandler(nlohmann::json &config_json) : ServerHandler(config_json["path"]["sftp_file_path"]){
-        
-        climate_data_file_path = config_json["path"]["climate_data_file_path"];
-        // gas_data_file_path; -- dopisać w jsonie
-        image_dir_path = config_json["path"]["image_dir_path"];//      być może zbędne - za każdego dnia inny folder
+    DataHandler(nlohmann::json &config_json) : 
+        climate_data_file_path(config_json["paths"]["climate_data_file_path"].get<std::string>().c_str()),
+        image_dir_path(config_json["paths"]["image_dir_path"].get<std::string>()),
+        climate_data_record_interval(std::chrono::minutes(config_json["settings"]["climate_data_record_interval"])),
+        image_record_interval(std::chrono::minutes(config_json["settings"]["image_record_interval"])),
+        serverSFTP(config_json["paths"]["sftp_path"].get<std::string>().c_str(), 
+				   config_json["paths"]["sftp_file_path"].get<std::string>(), 
+				   config_json["paths"]["sftp_image_path"].get<std::string>())
+				   
+        {std::cout << "[DATA] DataHandler initialized\n";} ; // gas_data_file_path; -- dopisać w jsonie
 
-        climate_data_record_interval = std::chrono::minutes(config_json["settings"]["climate_data_record_interval"]);
-        // gas_data_record_interval = std::chrono::minutes();
-        image_record_interval = std::chrono::minutes(config_json["settings"]["image_record_interval"]);
-
-    } 
-    
     void run();
 
 private:
@@ -49,6 +48,6 @@ private:
     // std::string getGasPayload();
     // std::string getGasData();
 
-}
+};
 
     

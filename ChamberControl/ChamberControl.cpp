@@ -9,10 +9,11 @@
 // const char* sftp_file_path = "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv";
 // const char* sftp_passwd = "matjanis:Kezi!de5to";
 
-void parseConfigurationFile(nlohmann::json &configuration_json); // add reading .env file
+void parseConfigurationFile(nlohmann::json &configuration_json);
 // void createConfigurationESP();
 
 int main() {
+	
     nlohmann::json configuration_json;
     parseConfigurationFile(configuration_json);
     
@@ -30,6 +31,7 @@ int main() {
 
     std::cout << "Pins ready!\n";
 
+    /*
     // set up SFTP server client
     // 
     // curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -44,11 +46,12 @@ int main() {
     // else {
     //     std::cout << "CURL wrong!\n";
     // }
+    */
 
     PeltierController peltierController(request, configuration_json);
     DataHandler dataHandler(configuration_json);
 
-    std::thread sftpThread(dataHandler.run);
+    std::thread sftpThread(&DataHandler::run, &dataHandler);
 
     while (true) {
         
@@ -59,15 +62,21 @@ int main() {
     return 0;
 }
 
-void parseConfigurationFile(){
+void parseConfigurationFile(nlohmann::json& configuration_json){
+    
+//    std::cout << "Attepmting opening json\n";
+    
     std::fstream configuration_file;
-    configuration_file.open(R"(c:\test\file.json)", std::ios::in);
+    configuration_file.open(R"(../configuration.json)", std::ios::in);
 
-    configuration_json{nlohmann::json::parse(configuration_file)};
+    configuration_json = nlohmann::json::parse(configuration_file);
 
-    // parsing .env file here
+//    std::cout << "Configuration files parsed!\n";
+//    std::cout << "Trying reading json:\n";
+//    std::cout << configuration_json["paths"]["climate_data_file_path"].get<std::string>() << std::endl;
+//    std::cout << configuration_json["paths"]["image_dir_path"].get<std::string>() << std::endl;
 
-    std::cout << "Configuration files parsed!\n";
+
 }
 
 /*

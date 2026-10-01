@@ -16,42 +16,50 @@ class ServerHandler{
 
     // std::string gas_data_payload;
     std::string climate_data_payload;
+    std::string image_dir_path;
+    
+    const std::string sftp_file_path;
+    const std::string sftp_image_path;
 
 public:
 
-    ServerHandler(const char* sftp_path) : climate_data_payload(""), sftp_file_path(sftp_path) {
+    ServerHandler(const char* sftp_path, std::string file_path, std::string image_path) : climate_data_payload(""), image_dir_path("../Images/"), 
+				sftp_file_path(file_path), sftp_image_path(image_path) {
 
-        const char* sftp_passwd = parseENV();
+        std::string sftp_passwd = parseENV();
 
         curl_global_init(CURL_GLOBAL_DEFAULT);
         curl = curl_easy_init(); // może musi być stworzone w main
 
         if(curl) {
-            curl_easy_setopt(curl, CURLOPT_URL, sftp_file_path );
-            curl_easy_setopt(curl, CURLOPT_USERPWD, sftp_passwd);
+            curl_easy_setopt(curl, CURLOPT_URL, sftp_path );
+            curl_easy_setopt(curl, CURLOPT_USERPWD, sftp_passwd.c_str());
+            curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
-            std::cout << "CURL ready!\n";
+            std::cout << "[SERVER] CURL ready!\n";
         }
         else {
-            if(result != CURLE_OK)
-                printf("CURL error: %s\n", curl_easy_strerror(result));
+            std::cout << "[SERVER] CURL error!\n";
         }
+
+        std::cout << "[SERVER] ServerHandler initialized\n";
     }
+
     ~ServerHandler(){
-        curl_easy_cleanup();
+        curl_easy_cleanup(curl);
     }
 
     bool appendClimateData();
     // bool appendGasData();
     bool sendImage();
     // bool sendState();
+    void actualizeClimatePayload(std::string payload);
+    // void actualizeGasPayload(std::string payload);
 
 private:
 
     // bool createNewFile();
-    void actualizeClimatePayload(std::string payload);
-    // void actualizeGasPayload(std::string payload);
     std::string findImageToSend();
-    const char* parseENV();
+    std::string parseENV();
 
-}
+};
