@@ -10,7 +10,7 @@
     "acceptable_sens_diff": 10.0,
     "sensors_update_interval": 10,
     "climate_data_record_interval": 1,
-    "image_record_interval": 2
+    "image_record_interval": 5
 },
 "paths": {
     "temp_up_path": "/sys/bus/iio/devices/iio:device0/in_temp_input",

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FOLDER="Images"
-IMAGE_INTERVAL=60
+IMAGE_INTERVAL=300
  
 echo "Rozpoczęcie wykonywania zdjęć"
 echo "-----------------------------"

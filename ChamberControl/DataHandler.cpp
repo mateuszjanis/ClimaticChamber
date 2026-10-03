@@ -46,7 +46,7 @@ void DataHandler::run(){
             std::cout << "Gas data handle activated!\n";
         }
         */
-
+		
         if (now - last_image_send_time >= image_record_interval) {
             std::cout << "[DATA] Image handle activated!\n"; 
             if (serverSFTP.sendImage()) { std::cout << "[DATA] sent correctly\n"; }
@@ -54,7 +54,7 @@ void DataHandler::run(){
             last_image_send_time = std::chrono::steady_clock::now();
             std::cout << "[DATA] Image handle completed!\n"; 
         }
-
+		
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 }

@@ -25,34 +25,34 @@ void ServerHandler::actualizeGasPayload(std::string payload){
 */
 bool ServerHandler::appendClimateData(){
 
-    if(curl){
-
+    
     // fmemopen: Otwiera string w pamięci RAM jako wirtualny plik tylko do odczytu ("r").
     FILE* mem_file = fmemopen((void*)climate_data_payload.c_str(), climate_data_payload.length(), "r");
     if (!mem_file) return false;
-    
+
+    if(curl){
+
     curl_easy_setopt(curl, CURLOPT_URL, sftp_file_path.c_str() );
     std::cout << "[SERVER] sftp_file_path: " << sftp_file_path << std::endl;
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+    curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
     curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)climate_data_payload.length());
-    curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
 
     CURLcode res = curl_easy_perform(curl);
-    
+    fclose(mem_file);
+        
     if(res != CURLE_OK) {
         std::cerr << "[SERVER]  if(curl) correct. Błąd transferu: " << curl_easy_strerror(res) << std::endl;
         return false;
     }
+    else {
+		std::cout << "[SERVER]  Saved climate data succesfully to server" << std::endl;
+		climate_data_payload.clear();
+		return true;
+	}
 
-    fclose(mem_file);
-
-    std::cout << "[SERVER]  Saved climate data succesfully to server" << std::endl;
-    climate_data_payload.clear();
-
-    return true;
-    
     } 
     else 
     {
@@ -63,16 +63,17 @@ bool ServerHandler::appendClimateData(){
 /*
 bool ServerHandler::appendGasData(){
 
-    if(curl){
-
     // fmemopen: Otwiera string w pamięci RAM jako wirtualny plik tylko do odczytu ("r").
     FILE* mem_file = fmemopen((void*)gas_data_payload.c_str(), gas_data_payload.length(), "r");
     if (!mem_file) return false;
-    
+
+    if(curl){
+       
     curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+    curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
     curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)gas_data_payload.length());
-    curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
+
 
     CURLcode res = curl_easy_perform(curl);
     if(res != CURLE_OK) {
@@ -113,14 +114,18 @@ bool ServerHandler::sendImage(){
     fstat(fileno(file), &file_info);
     
     if (curl) {
+		
 		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+		curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
 		curl_easy_setopt(curl, CURLOPT_URL, (sftp_image_path + image_file_path).c_str() );
 		// std::cout << "[SERVER] sftp_image_path: " << sftp_image_path << std::endl;
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+        curl_easy_setopt(curl, CURLOPT_APPEND, 0L);
         curl_easy_setopt(curl, CURLOPT_READDATA, file);
         curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
 
         CURLcode res = curl_easy_perform(curl);
+        fclose(file);
 
         if (res != CURLE_OK) {
             std::cerr << "[SERVER] Błąd przesyłania: " << curl_easy_strerror(res) << '\n';
@@ -130,8 +135,7 @@ bool ServerHandler::sendImage(){
              std::cout << "[SERVER] Zdjęcie zostało pomyślnie wysłane!" << '\n';
         }
     }
-    
-    fclose(file);
+
     return true;    
 
 }
