@@ -2,6 +2,7 @@
 #include <gpiod.hpp>
 #include <chrono>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include "ControlSensors.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@ class PeltierController {
 
     enum mode curr_mode;
     
-    double goal_temperature; // degrees Celsius
+    const double goal_temperature; // degrees Celsius
     const double temp_sensitivity; // degrees Celsius
     const double temp_diff_toggle_threshold; // degrees Celsius
     const double temp_diff_fan_threshold; // degrees Celsius
@@ -44,14 +45,15 @@ class PeltierController {
 
 public:
 
-    PeltierController(::gpiod::line_request &request, double goal_temp, double temp_sens, 
-                    double toggle_treshold, double fan_treshold) : 
-        request(request), temp_sensitivity(temp_sens), temp_diff_toggle_threshold(toggle_treshold), 
-        temp_diff_fan_threshold(fan_treshold) 
+    PeltierController(::gpiod::line_request &request, nlohmann::json &config_json) : request(request),
+        goal_temperature(config_json["control"]["goal_temperature"]),
+        temp_sensitivity(config_json["settings"]["temp_sensitivity"]),
+        temp_diff_toggle_threshold(config_json["settings"]["temp_diff_toggle_threshold"]),
+        temp_diff_fan_threshold(config_json["settings"]["temp_diff_fan_threshold"])
     {
         initialSensorsReading();
         initialPeltierSensorsReading();
-        setTemperatureGoal(goal_temp);
+        calculateTemperatureControlParameters();
         
         curr_mode = IDLE;
         setMode(IDLE);
@@ -59,7 +61,6 @@ public:
     }
     
     void runTemperatureControl();
-    void setTemperatureGoal(double goal_temp);
 
 private:
 

@@ -202,10 +202,3 @@ void PeltierController::calculateTemperatureControlParameters(){
         std::cout << "Temperature Cooling Stop: " << temp_cooling_stop << " °C" << std::endl;
         std::cout << "--------------------------------------------------------------------\n";
 }
-
-void PeltierController::setTemperatureGoal(double goal_temp) {
-    
-    goal_temperature = goal_temp;
-    calculateTemperatureControlParameters();
-
-}
