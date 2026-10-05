@@ -13,9 +13,13 @@
 
 class DataHandler{
 
-    const std::string climate_data_file_path;
-    // const std::string gas_data_file_path;
-    const std::string image_dir_path;
+    const std::string data_dir;
+    const std::string climate_filename;
+    // const std::string gas_filename;
+    const std::string images_dir;
+    const std::string take_photo_script;
+
+    std::string day_dir;
 
     const std::chrono::minutes climate_data_record_interval; // może byc kilka
     // const std::chrono::minutes gas_data_record_interval;
@@ -26,15 +30,28 @@ class DataHandler{
 public:
 
     DataHandler(nlohmann::json &config_json) : 
-        climate_data_file_path(config_json["paths"]["climate_data_file_path"].get<std::string>().c_str()),
-        image_dir_path(config_json["paths"]["image_dir_path"].get<std::string>()),
+        data_dir(config_json["paths"]["data_dir"].get<std::string>()),
+        climate_filename(config_json["paths"]["climate_filename"].get<std::string>()),
+        // gas_filename(config_json["paths"]["gas_filename"].get<std::string>()),
+        images_dir(config_json["paths"]["images_dir"].get<std::string>()),
+        take_photo_script(config_json["paths"]["take_photo_script"].get<std::string>()),
+
+        day_dir("Data_" + getDateString()),
+
         climate_data_record_interval(std::chrono::minutes(config_json["settings"]["climate_data_record_interval"])),
+        // gas_data_record_interval(std::chrono::minutes(config_json["settings"]["gas_data_record_interval"])),
         image_record_interval(std::chrono::minutes(config_json["settings"]["image_record_interval"])),
+        
         serverSFTP(config_json["paths"]["sftp_path"].get<std::string>().c_str(), 
-				   config_json["paths"]["sftp_file_path"].get<std::string>(), 
-				   config_json["paths"]["sftp_image_path"].get<std::string>())
-				   
-        {std::cout << "[DATA] DataHandler initialized\n";} ; // gas_data_file_path; -- dopisać w jsonie
+				   config_json["paths"]["passwd_file_path"].get<std::string>(), 
+				   data_dir, climate_filename,
+                   // gas_filename,
+                   images_dir, day_dir) 
+        {
+
+            std::cout << "[DATA] DataHandler initialized\n";
+        
+        };
 
     void run();
 
@@ -45,8 +62,12 @@ private:
     std::string getTimeString();
     std::string getDateString();
     std::string getClimatePayload();
+    std::string getImageFileName();
+    void actualizeDate(std::string new_date);
     // std::string getGasPayload();
     // std::string getGasData();
+    void actualizeDate(std::string new_date);
+    void takePhoto(std::string image_file_path);
 
 };
 

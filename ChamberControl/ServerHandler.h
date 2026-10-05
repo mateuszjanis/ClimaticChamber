@@ -16,15 +16,32 @@ class ServerHandler{
 
     // std::string gas_data_payload;
     std::string climate_data_payload;
-    std::string image_dir_path;
+    std::vector<std::string> photo_payload;
     
-    const std::string sftp_file_path;
-    const std::string sftp_image_path;
+    const std::string sftp_path;
+    const std::string passwd_file_path;
+    const std::string data_dir;
+    const std::string climate_filename;
+    // const std::string gas_filename;
+    const std::string images_dir;
+
+    std::string day_dir;
 
 public:
 
-    ServerHandler(const char* sftp_path, std::string file_path, std::string image_path) : climate_data_payload(""), image_dir_path("../Images/"), 
-				sftp_file_path(file_path), sftp_image_path(image_path) {
+    ServerHandler(const char* sftp_path, const std::string passwd_file_path, const std::string data_dir, const std::string climate_filename,
+                    // const std::string gas_filename,
+                    const std::string images_dir, std::string day_dir) : 
+                    
+                        sftp_path(sftp_path), 
+                        passwd_file_path(passwd_file_path),
+                        data_dir(data_dir), 
+                        climate_filename(climate_filename),
+                        // gas_filename(gas_filename),
+                        images_dir(images_dir), 
+                        day_dir(day_dir),
+                        climate_data_payload(""),
+                        photo_payload({}) {
 
         std::string sftp_passwd = parseENV();
 
@@ -49,17 +66,18 @@ public:
         curl_easy_cleanup(curl);
     }
 
-    bool appendClimateData();
+    bool appendClimateData(std::string payload);
     // bool appendGasData();
-    bool sendImage();
+    bool sendPhoto(std::string image_to_send);
     // bool sendState();
     void actualizeClimatePayload(std::string payload);
     // void actualizeGasPayload(std::string payload);
+    void actualizeDayDir(std::string new_day_dir);
 
 private:
 
     // bool createNewFile();
-    std::string findImageToSend();
+    // std::string findImageToSend();
     std::string parseENV();
 
 };

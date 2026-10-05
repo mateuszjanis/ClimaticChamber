@@ -6,7 +6,7 @@
 #define CHIP_PATH "/dev/gpiochip4"
 #define CONSUMER "chamber_rpi5"
 
-// const char* sftp_file_path = "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv";
+// const char* sftp_climate_path = "sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/ChamberData.csv";
 // const char* sftp_passwd = "matjanis:Kezi!de5to";
 
 void parseConfigurationFile(nlohmann::json &configuration_json);
@@ -38,7 +38,7 @@ int main() {
     // CURL *curl = curl_easy_init();
     // 
     // if(curl) {
-    //     curl_easy_setopt(curl, CURLOPT_URL, sftp_file_path );
+    //     curl_easy_setopt(curl, CURLOPT_URL, sftp_climate_path );
     //     curl_easy_setopt(curl, CURLOPT_USERPWD, sftp_passwd);
     //
     //     std::cout << "CURL ready!\n";

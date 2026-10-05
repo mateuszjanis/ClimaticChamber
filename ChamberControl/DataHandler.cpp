@@ -2,14 +2,12 @@
 
 void DataHandler::run(){
 
-    // while (getDateString().substr(0, 4) < "2026") {
-    //     std::cout << "Czekam na synchronizacje czasu NTP...\n";
-    //     std::this_thread::sleep_for(std::chrono::seconds(2));
-    // }
+    while (getDateString().substr(0, 4) < "2026") {
+        std::cout << "Waiting for time sync with NTP...\n";
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
 
-    // std::string current_date = getDateString();
-
-    // ^^^^^^^^^^^^^ to take care - different approach ^^^^^^^^^^^^^
+    std::string current_date = getDateString();
 
     // auto last_gas_send_time = std::chrono::steady_clock::now();
     auto last_climate_send_time = std::chrono::steady_clock::now();
@@ -17,22 +15,23 @@ void DataHandler::run(){
 
     while (true) {
 
-        // std::string checked_date = getDateString();
-        auto now = std::chrono::steady_clock::now();
+        std::string checked_date = getDateString();
+        auto now = std::chrono::steady_clock::now(); // <- przekazywanie tej daty i z niej tworzenie payloadów
 
         // serverSFTP.sendState();
         
-        // if (checked_date != current_date) {
-        //     // actForNewDate();
-        //     std::cout << "New date detected: " << checked_date << "\n";
-        // }
+        if (checked_date != current_date) {
+            actualizeDate(checked_date);
+            current_date = checked_date;
+        }
+
+        // pozamykać poniższe funkcje w funckje typu actForClimateData() i actForGasData() i actForImageData()
 
         if (now - last_climate_send_time >= climate_data_record_interval) {
 	
 			std::cout << "[DATA] Climate data handle activated!\n";
             appendClimateDataLocally();
-            serverSFTP.actualizeClimatePayload(getClimatePayload());
-            serverSFTP.appendClimateData();
+            serverSFTP.appendClimateData(getClimatePayload());
             last_climate_send_time = std::chrono::steady_clock::now(); 
             std::cout << "[DATA] Climate data handle completed!\n";
         }
@@ -48,11 +47,22 @@ void DataHandler::run(){
         */
 		
         if (now - last_image_send_time >= image_record_interval) {
-            std::cout << "[DATA] Image handle activated!\n"; 
-            if (serverSFTP.sendImage()) { std::cout << "[DATA] sent correctly\n"; }
+            
+            std::cout << "[DATA] Image handle activated!\n";
+
+            image_filename = getImageFileName();
+            
+            std::string image_file_path = data_dir + "/" + day_dir + "/" + images_dir + "/" + image_filename;
+            
+            takePhoto(image_file_path);
+            // serverSFTP.sendPhoto(image_filename);
+            if (serverSFTP.sendPhoto(image_filename)) { std::cout << "[DATA] sent correctly\n"; }
             else { std::cout << "[DATA] sent incorrectly\n"; }
-            last_image_send_time = std::chrono::steady_clock::now();
+            
             std::cout << "[DATA] Image handle completed!\n"; 
+
+            last_image_send_time = std::chrono::steady_clock::now();
+
         }
 		
         std::this_thread::sleep_for(std::chrono::seconds(10));
@@ -61,14 +71,19 @@ void DataHandler::run(){
 
 void DataHandler::appendClimateDataLocally(){
 
+    std::string climate_data_file_path = data_dir + "/" + day_dir + "/" + climate_filename;
     std::ofstream file(climate_data_file_path, std::ios::app);
     
     if (file.is_open()) {
+
         file << getClimatePayload();
         std::cout << "[DATA] Climate data appended\n";
+
     }
     else{
+
         std::cout << "[DATA] Climate data NOT appended\n";
+
     }
 
 }
@@ -76,6 +91,7 @@ void DataHandler::appendClimateDataLocally(){
 /*
 void DataHandler::appendGasDataLocally(){
 
+    std::string gas_data_file_path = data_dir + "/" + day_dir + "/" + gas_filename;
     std::ofstream file(gas_data_file_path, std::ios::app);
     
     if (file.is_open()) {
@@ -96,7 +112,7 @@ std::string DataHandler::getDateString() {
 
     localtime_r(&now, &tm_struct); 
     
-    char date_buffer[11]; // "YYYY-MM-DD\0" to dokładnie 11 znaków
+    char date_buffer[11]; // "YYYY-MM-DD\0"
     std::strftime(date_buffer, sizeof(date_buffer), "%Y-%m-%d", &tm_struct);
     
     return std::string(date_buffer);
@@ -129,6 +145,20 @@ std::string DataHandler::getClimatePayload(){
     return std::string(payload_buffer);
 
 }
+
+std::string DataHandler::getImageFileName() {
+
+    std::time_t now = std::time(nullptr);
+    std::tm tm_struct;
+
+    localtime_r(&now, &tm_struct); 
+    
+    char date_buffer[25]; // "YYYY-MM-DD_HH-MM-SS\0"
+    std::strftime(date_buffer, sizeof(date_buffer), "%Y-%m-%d_%H-%M-%S", &tm_struct);
+    
+    return std::string("image_") + std::string(date_buffer);
+}
+
 /*
 std::string DataHandler::getGasPayload(){
     
@@ -148,3 +178,18 @@ std::string DataHandler::getGasData(){
 
 }
 */
+
+void DataHandler::actualizeDate(std::string new_date){
+
+    day_dir = "Data_" + new_date;
+    serverSFTP.actualizeDayDir(day_dir);
+    std::cout << "New date detected: " << new_date << "\n";
+
+}
+
+void DataHandler::takePhoto(std::string image_file_path){
+
+    std::string command = take_photo_script + " '" + image_file_path + "'";
+    int result = std::system(command.c_str());
+
+}
