@@ -50,7 +50,7 @@ void DataHandler::run(){
             
             std::cout << "[DATA] Image handle activated!\n";
 
-            image_filename = getImageFileName();
+            std::string image_filename = getImageFileName();
             
             std::string image_file_path = data_dir + "/" + day_dir + "/" + images_dir + "/" + image_filename;
             

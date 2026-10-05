@@ -9,6 +9,7 @@
 #include <chrono>
 #include <ctime>
 #include <sys/stat.h>
+#include <vector>
 
 class ServerHandler{
 
@@ -32,16 +33,17 @@ public:
     ServerHandler(const char* sftp_path, const std::string passwd_file_path, const std::string data_dir, const std::string climate_filename,
                     // const std::string gas_filename,
                     const std::string images_dir, std::string day_dir) : 
-                    
+                        
+                        climate_data_payload(""),
+                        photo_payload({}),
+                                            
                         sftp_path(sftp_path), 
                         passwd_file_path(passwd_file_path),
                         data_dir(data_dir), 
                         climate_filename(climate_filename),
                         // gas_filename(gas_filename),
                         images_dir(images_dir), 
-                        day_dir(day_dir),
-                        climate_data_payload(""),
-                        photo_payload({}) {
+						day_dir(day_dir) {
 
         std::string sftp_passwd = parseENV();
 

@@ -66,7 +66,6 @@ private:
     void actualizeDate(std::string new_date);
     // std::string getGasPayload();
     // std::string getGasData();
-    void actualizeDate(std::string new_date);
     void takePhoto(std::string image_file_path);
 
 };
