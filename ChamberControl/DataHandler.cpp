@@ -32,9 +32,9 @@ void DataHandler::run(){
         if (now - last_climate_send_time >= climate_data_record_interval) {
 	
 			std::cout << "[DATA] Climate data handle activated!\n";
+			last_climate_send_time = std::chrono::steady_clock::now(); 
             appendClimateDataLocally();
             serverSFTP.appendClimateData(getClimatePayload());
-            last_climate_send_time = std::chrono::steady_clock::now(); 
             std::cout << "[DATA] Climate data handle completed!\n";
         }
 
@@ -52,6 +52,8 @@ void DataHandler::run(){
             
             std::cout << "[DATA] Image handle activated!\n";
 
+            last_image_send_time = std::chrono::steady_clock::now();		
+
             std::string image_filename = getImageFileName();
             
             std::string image_file_path = data_dir + "/" + day_dir + "/" + images_dir + "/" + image_filename;
@@ -62,8 +64,6 @@ void DataHandler::run(){
             else { std::cout << "[DATA] sent incorrectly\n"; }
             
             std::cout << "[DATA] Image handle completed!\n"; 
-
-            last_image_send_time = std::chrono::steady_clock::now();
 
         }
 		
@@ -158,7 +158,7 @@ std::string DataHandler::getImageFileName() {
     char date_buffer[25]; // "YYYY-MM-DD_HH-MM-SS\0"
     std::strftime(date_buffer, sizeof(date_buffer), "%Y-%m-%d_%H-%M-%S", &tm_struct);
     
-    return std::string("image_") + std::string(date_buffer);
+    return std::string("image_") + std::string(date_buffer) + std::string(".jpg");
 }
 
 /*
@@ -192,12 +192,12 @@ void DataHandler::actualizeDate(std::string new_date){
 
 void DataHandler::takePhoto(std::string image_file_path){
 
-    std::string command = take_photo_script + " '" + image_file_path + "'";
+    std::string command = "./" + take_photo_script + " '" + image_file_path + "'";
     int result = std::system(command.c_str());
 
 }
 
-void DataHandler::createNecessaryDirectoriesAndFiles() {
+void DataHandler::createNecessaryDirectoriesAndFiles() {		// <<------- ADD HERE CREATING FILE "HEADERS" ON SERVER!!!!!
 
     std::string day_dir_path = data_dir + "/" + day_dir;
     std::string images_dir_path = day_dir_path + "/" + images_dir;
@@ -224,4 +224,6 @@ void DataHandler::createNecessaryDirectoriesAndFiles() {
         climate_file.close();
         std::cout << "[DATA] Created file: " << climate_file_path << "\n";
     }
+    
+    serverSFTP.createMissingFiles();
 }

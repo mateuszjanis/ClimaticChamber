@@ -31,7 +31,7 @@ bool ServerHandler::appendClimateData(std::string payload){
     FILE* mem_file = fmemopen((void*)climate_data_payload.c_str(), climate_data_payload.length(), "r");
     if (!mem_file) return false;
 
-    std::string sftp_climate_path = sftp_path + data_dir + "/" + day_dir + "/" + climate_filename;
+    std::string sftp_climate_path = sftp_path + day_dir + "/" + climate_filename;
 
     if(curl){
 
@@ -107,9 +107,10 @@ bool ServerHandler::sendPhoto(std::string image_to_send){
 
     while (!photo_payload.empty()) {
 
-        std::string image_file_path = sftp_path + data_dir + "/" + images_dir + "/" + photo_payload.front();
-
-        std::cout << "[SERVER] Sending to: " << image_file_path << std::endl;
+        std::string sftp_image_path = sftp_path + day_dir + "/" + images_dir + "/" + photo_payload.front();
+		std::string image_file_path = data_dir + "/" + day_dir + "/" + images_dir + "/" + photo_payload.front();
+		
+        std::cout << "[SERVER] Sending " << image_file_path << " to: "<< sftp_image_path << std::endl;
 
         FILE* file = fopen(image_file_path.c_str(), "rb");
 
@@ -125,7 +126,7 @@ bool ServerHandler::sendPhoto(std::string image_to_send){
             
             curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
             curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
-            curl_easy_setopt(curl, CURLOPT_URL, image_file_path.c_str());
+            curl_easy_setopt(curl, CURLOPT_URL, sftp_image_path.c_str());
             // std::cout << "[SERVER] sftp_image_path: " << sftp_image_path << std::endl;
             curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
             curl_easy_setopt(curl, CURLOPT_APPEND, 0L);
@@ -214,4 +215,13 @@ std::string ServerHandler::parseENV(){
 
 void ServerHandler::actualizeDayDir(std::string new_day_dir) {
     day_dir = new_day_dir;
+}
+
+void ServerHandler::createMissingFiles(){
+     
+    std::string climate_header = "Timestamp;Humidity;Temperature;Peltier_In;Peltier_Out\n";
+	appendClimateData(climate_header);
+	
+	// the same for gas data
+
 }
