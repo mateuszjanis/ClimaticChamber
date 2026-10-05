@@ -9,6 +9,8 @@ void DataHandler::run(){
 
     std::string current_date = getDateString();
 
+    createNecessaryDirectoriesAndFiles();
+
     // auto last_gas_send_time = std::chrono::steady_clock::now();
     auto last_climate_send_time = std::chrono::steady_clock::now();
     auto last_image_send_time = std::chrono::steady_clock::now();
@@ -183,6 +185,7 @@ void DataHandler::actualizeDate(std::string new_date){
 
     day_dir = "Data_" + new_date;
     serverSFTP.actualizeDayDir(day_dir);
+    createNecessaryDirectoriesAndFiles();
     std::cout << "New date detected: " << new_date << "\n";
 
 }
@@ -192,4 +195,33 @@ void DataHandler::takePhoto(std::string image_file_path){
     std::string command = take_photo_script + " '" + image_file_path + "'";
     int result = std::system(command.c_str());
 
+}
+
+void DataHandler::createNecessaryDirectoriesAndFiles() {
+
+    std::string day_dir_path = data_dir + "/" + day_dir;
+    std::string images_dir_path = day_dir_path + "/" + images_dir;
+    std::string climate_file_path = day_dir_path + "/" + climate_filename;
+
+    // The same for gas file in the future
+
+    // Create the day directory if it doesn't exist
+    if (!std::filesystem::exists(day_dir_path)) {
+        std::filesystem::create_directories(day_dir_path);
+        std::cout << "[DATA] Created directory: " << day_dir_path << "\n";
+    }
+
+    // Create the images directory if it doesn't exist
+    if (!std::filesystem::exists(images_dir_path)) {
+        std::filesystem::create_directories(images_dir_path);
+        std::cout << "[DATA] Created directory: " << images_dir_path << "\n";
+    }
+
+    // Create the data file if it doesn't exist
+    if (!std::filesystem::exists(climate_file_path)) {
+        std::ofstream climate_file(climate_file_path);
+        climate_file << "Timestamp;Humidity;Temperature;Peltier_In;Peltier_Out\n";
+        climate_file.close();
+        std::cout << "[DATA] Created file: " << climate_file_path << "\n";
+    }
 }
