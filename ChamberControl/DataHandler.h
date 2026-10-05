@@ -51,7 +51,7 @@ public:
 
             std::cout << "[DATA] DataHandler initialized\n";
         
-        };
+    };
 
     void run();
 
@@ -67,6 +67,7 @@ private:
     // std::string getGasPayload();
     // std::string getGasData();
     void takePhoto(std::string image_file_path);
+    void createNecessaryDirectoriesAndFiles();
 
 };
 
