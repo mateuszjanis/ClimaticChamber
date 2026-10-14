@@ -21,7 +21,7 @@ class DataHandler{
 
     std::string day_dir;
 
-    const std::chrono::minutes climate_data_record_interval; // może byc kilka
+    const std::chrono::minutes climate_data_record_interval;
     const std::chrono::minutes gas_data_record_interval;
     const std::chrono::minutes image_record_interval;
 
@@ -45,7 +45,7 @@ public:
         serverSFTP(config_json["paths"]["sftp_path"].get<std::string>().c_str(), 
 				   config_json["paths"]["passwd_file_path"].get<std::string>(), 
 				   data_dir, climate_filename,
-                   // gas_filename,
+                   gas_filename,
                    images_dir, day_dir) 
         {
 

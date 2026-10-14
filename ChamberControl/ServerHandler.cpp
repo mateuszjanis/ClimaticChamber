@@ -66,7 +66,7 @@ bool ServerHandler::appendClimateData(std::string payload){
 
 }
 
-bool ServerHandler::appendGasData(){
+bool ServerHandler::appendGasData(std::string payload){
 
     actualizeGasPayload(payload);   // create this fun
 
@@ -74,10 +74,12 @@ bool ServerHandler::appendGasData(){
     FILE* mem_file = fmemopen((void*)gas_data_payload.c_str(), gas_data_payload.length(), "r");
     if (!mem_file) return false;
 
+    std::string sftp_gas_path = sftp_path + day_dir + "/" + gas_filename;
+
     if(curl){
        
         curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
-        curl_easy_setopt(curl, CURLOPT_URL, sftp_climate_path.c_str() );
+        curl_easy_setopt(curl, CURLOPT_URL, sftp_gas_path.c_str() );
         std::cout << "[SERVER] sftp_gas_path: " << sftp_gas_path << std::endl;
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);

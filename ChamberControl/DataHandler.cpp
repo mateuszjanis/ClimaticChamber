@@ -182,7 +182,7 @@ void DataHandler::actualizeDate(std::string new_date){
 void DataHandler::takePhoto(std::string image_file_path){
 
     std::string command = "./" + take_photo_script + " '" + image_file_path + "'";
-    int result = std::system(command.c_str());
+    std::system(command.c_str()); // add checking the result ???
 
 }
 

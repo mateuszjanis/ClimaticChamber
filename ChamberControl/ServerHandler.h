@@ -15,7 +15,7 @@ class ServerHandler{
 
     CURL *curl;
 
-    // std::string gas_data_payload;
+    std::string gas_data_payload;
     std::string climate_data_payload;
     std::vector<std::string> photo_payload;
     
@@ -23,15 +23,15 @@ class ServerHandler{
     const std::string passwd_file_path;
     const std::string data_dir;
     const std::string climate_filename;
-    // const std::string gas_filename;
+    const std::string gas_filename;
     const std::string images_dir;
 
     std::string day_dir;
 
 public:
 
-    ServerHandler(const char* sftp_path, const std::string passwd_file_path, const std::string data_dir, const std::string climate_filename,
-                    // const std::string gas_filename,
+    ServerHandler(const char* sftp_path, const std::string passwd_file_path, const std::string data_dir, 
+                    const std::string climate_filename, const std::string gas_filename,
                     const std::string images_dir, std::string day_dir) : 
                         
                         climate_data_payload(""),
@@ -41,7 +41,7 @@ public:
                         passwd_file_path(passwd_file_path),
                         data_dir(data_dir), 
                         climate_filename(climate_filename),
-                        // gas_filename(gas_filename),
+                        gas_filename(gas_filename),
                         images_dir(images_dir),
 						day_dir(day_dir) {
 	
@@ -69,7 +69,7 @@ public:
     }
 
     bool appendClimateData(std::string payload);
-    bool appendGasData();
+    bool appendGasData(std::string payload);
     bool sendPhoto(std::string image_to_send);
     // bool sendState();
     void actualizeClimatePayload(std::string payload);
