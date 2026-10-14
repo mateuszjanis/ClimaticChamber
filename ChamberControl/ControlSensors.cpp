@@ -179,7 +179,7 @@ bool readPeltierSensors(){
         return true; // file does not exist / is open
     }
 
-    std::string sensorsLine = readPeltierLine(peltier_filepath);
+    std::string sensorsLine = readPeltierLine();
     char* endPtr;
 
     float temp1 = std::strtof(sensorsLine.c_str(), &endPtr);
