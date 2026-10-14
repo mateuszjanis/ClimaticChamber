@@ -22,7 +22,7 @@ class DataHandler{
     std::string day_dir;
 
     const std::chrono::minutes climate_data_record_interval; // może byc kilka
-    // const std::chrono::minutes gas_data_record_interval;
+    const std::chrono::minutes gas_data_record_interval;
     const std::chrono::minutes image_record_interval;
 
     ServerHandler serverSFTP;
@@ -39,7 +39,7 @@ public:
         day_dir("Data_" + getDateString()),
 
         climate_data_record_interval(std::chrono::minutes(config_json["settings"]["climate_data_record_interval"])),
-        // gas_data_record_interval(std::chrono::minutes(config_json["settings"]["gas_data_record_interval"])),
+        gas_data_record_interval(std::chrono::minutes(config_json["settings"]["gas_data_record_interval"])),
         image_record_interval(std::chrono::minutes(config_json["settings"]["image_record_interval"])),
         
         serverSFTP(config_json["paths"]["sftp_path"].get<std::string>().c_str(), 
@@ -58,14 +58,14 @@ public:
 private:
 
     void appendClimateDataLocally();
-    // void appendGasDataLocally();
+    void appendGasDataLocally();
     std::string getTimeString();
     std::string getDateString();
     std::string getClimatePayload();
     std::string getImageFileName();
     void actualizeDate(std::string new_date);
-    // std::string getGasPayload();
-    // std::string getGasData();
+    std::string getGasPayload();
+    std::string getGasData();
     void takePhoto(std::string image_file_path);
     void createNecessaryDirectoriesAndFiles();
 

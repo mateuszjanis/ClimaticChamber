@@ -86,7 +86,7 @@ void initialPeltierSensorsReading(){
         else {
             
             // std::string sensorsLine = readLastLine(peltier_filepath);
-            char peltierLine = readPeltierLine().c_str();
+            const char* peltierLine = readPeltierLine().c_str();
             char* endPtr;
 
             temp1 = std::strtof(peltierLine, &endPtr);

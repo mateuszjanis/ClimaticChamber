@@ -160,19 +160,13 @@ std::string DataHandler::getImageFileName() {
 }
 
 std::string DataHandler::getGasPayload(){
-
-    return getTimeString() + ";" + getGasData();
-
-}
-
-std::string DataHandler::getGasData(){
     
     std::string gas_line;
     std::ifstream gas_file(gas_filename);
     if (!gas_file.is_open()) return "";
-    else getline(gas_file, gas_line)
+    else getline(gas_file, gas_line);
 
-    return gas_line;
+    return getTimeString() + ";" + gas_line;
 
 }
 
@@ -222,8 +216,8 @@ void DataHandler::createNecessaryDirectoriesAndFiles() {		// <<------- ADD HERE 
     // Create the data file if it doesn't exist
     if (!std::filesystem::exists(gas_file_path)) {
         std::ofstream climate_file(gas_file_path);
-        gas_file_path << "Timestamp; MG811_OKY_CO2_f; MQ3_EtOH_f; MQ4_CH4_f; SEN0565_CH4_f; SEN0568_H2S_f; SEN0569_EtOH_f; SEN0567_NH3_f; SEN0467_H2S_f; SEN0469_NH3_f; SCD41_CO2_f; SCD41_T_f; SCD41_H_f\n";
-        gas_file_path.close();
+        climate_file << "Timestamp; MG811_OKY_CO2_f; MQ3_EtOH_f; MQ4_CH4_f; SEN0565_CH4_f; SEN0568_H2S_f; SEN0569_EtOH_f; SEN0567_NH3_f; SEN0467_H2S_f; SEN0469_NH3_f; SCD41_CO2_f; SCD41_T_f; SCD41_H_f\n";
+        climate_file.close();
         std::cout << "[DATA] Created file: " << gas_file_path << "\n";
     }
     
