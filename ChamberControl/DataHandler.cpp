@@ -2,16 +2,16 @@
 
 void DataHandler::run(){
 
-    while (getDateString().substr(0, 4) < "2026") {
-        std::cout << "Waiting for time sync with NTP...\n";
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-    }
+    // while (getDateString().substr(0, 4) < "2026") {
+    //     std::cout << "Waiting for time sync with NTP...\n";
+    //     std::this_thread::sleep_for(std::chrono::seconds(2));
+    // }
 
     std::string current_date = getDateString();
 
     createNecessaryDirectoriesAndFiles();
 
-    // auto last_gas_send_time = std::chrono::steady_clock::now();
+    auto last_gas_send_time = std::chrono::steady_clock::now();
     auto last_climate_send_time = std::chrono::steady_clock::now();
     auto last_image_send_time = std::chrono::steady_clock::now();
 
@@ -38,15 +38,14 @@ void DataHandler::run(){
             std::cout << "[DATA] Climate data handle completed!\n";
         }
 
-        /*
-        if (now - last_gas_send_time >= gas_data_record_interval) {
+        if (now - last_climate_send_time >= climate_data_record_interval) {
+	
+			std::cout << "[DATA] Climate data handle activated!\n";
+			last_climate_send_time = std::chrono::steady_clock::now(); 
             appendGasDataLocally();
-            serverSFTP.actualizeGasPayload(getGasPayload());
-            serverSFTP.appendGasData();
-            last_gas_send_time = std::chrono::steady_clock::now();
-            std::cout << "Gas data handle activated!\n";
+            serverSFTP.appendGasData(getClimatePayload());
+            std::cout << "[DATA] Climate data handle completed!\n";
         }
-        */
 		
         if (now - last_image_send_time >= image_record_interval) {
             
@@ -90,7 +89,6 @@ void DataHandler::appendClimateDataLocally(){
 
 }
 
-/*
 void DataHandler::appendGasDataLocally(){
 
     std::string gas_data_file_path = data_dir + "/" + day_dir + "/" + gas_filename;
@@ -105,7 +103,7 @@ void DataHandler::appendGasDataLocally(){
     }
 
 }
-*/
+
 
 std::string DataHandler::getDateString() {
 
@@ -128,7 +126,7 @@ std::string DataHandler::getTimeString(){
     localtime_r(&now, &tm_struct); 
     
     char time_buffer[25];
-    std::strftime(time_buffer, sizeof(time_buffer), "%Y.%m.%d %H:%M:%S", &tm_struct);
+    std::strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", &tm_struct);
 
     return std::string(time_buffer);
 }
@@ -161,25 +159,24 @@ std::string DataHandler::getImageFileName() {
     return std::string("image_") + std::string(date_buffer) + std::string(".jpg");
 }
 
-/*
 std::string DataHandler::getGasPayload(){
-    
-    char payload_buffer[128];
 
-    std::snprintf(payload_buffer, sizeof(payload_buffer), "%s;%s\n", 
-                getTimeString().c_str(),
-                getGasData());
-
-    return std::string(payload_buffer);
+    return getTimeString() + ";" + getGasData();
 
 }
 
 std::string DataHandler::getGasData(){
+    
+    std::string gas_line;
+    std::ifstream gas_file(gas_filename);
+    if (!gas_file.is_open()) return "";
+    else getline(gas_file, gas_line)
 
-    //gas data reading from esp file
+    return gas_line;
 
 }
-*/
+
+}
 
 void DataHandler::actualizeDate(std::string new_date){
 
@@ -199,11 +196,10 @@ void DataHandler::takePhoto(std::string image_file_path){
 
 void DataHandler::createNecessaryDirectoriesAndFiles() {		// <<------- ADD HERE CREATING FILE "HEADERS" ON SERVER!!!!!
 
-    std::string day_dir_path = data_dir + "/" + day_dir;
-    std::string images_dir_path = day_dir_path + "/" + images_dir;
+    std::string day_dir_path =      data_dir + "/" + day_dir;
+    std::string images_dir_path =   day_dir_path + "/" + images_dir;
     std::string climate_file_path = day_dir_path + "/" + climate_filename;
-
-    // The same for gas file in the future
+    std::string gas_file_path =     day_dir_path + "/" + gas_filename;
 
     // Create the day directory if it doesn't exist
     if (!std::filesystem::exists(day_dir_path)) {
@@ -220,9 +216,17 @@ void DataHandler::createNecessaryDirectoriesAndFiles() {		// <<------- ADD HERE 
     // Create the data file if it doesn't exist
     if (!std::filesystem::exists(climate_file_path)) {
         std::ofstream climate_file(climate_file_path);
-        climate_file << "Timestamp;Humidity;Temperature;Peltier_In;Peltier_Out\n";
+        climate_file << "Timestamp; Humidity; Temperature; Peltier_In; Peltier_Out\n";
         climate_file.close();
         std::cout << "[DATA] Created file: " << climate_file_path << "\n";
+    }
+
+    // Create the data file if it doesn't exist
+    if (!std::filesystem::exists(gas_file_path)) {
+        std::ofstream climate_file(gas_file_path);
+        gas_file_path << "Timestamp; MG811_OKY_CO2_f; MQ3_EtOH_f; MQ4_CH4_f; SEN0565_CH4_f; SEN0568_H2S_f; SEN0569_EtOH_f; SEN0567_NH3_f; SEN0467_H2S_f; SEN0469_NH3_f; SCD41_CO2_f; SCD41_T_f; SCD41_H_f\n";
+        gas_file_path.close();
+        std::cout << "[DATA] Created file: " << gas_file_path << "\n";
     }
     
     serverSFTP.createMissingFiles();

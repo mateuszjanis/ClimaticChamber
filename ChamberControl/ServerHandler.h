@@ -69,11 +69,11 @@ public:
     }
 
     bool appendClimateData(std::string payload);
-    // bool appendGasData();
+    bool appendGasData();
     bool sendPhoto(std::string image_to_send);
     // bool sendState();
     void actualizeClimatePayload(std::string payload);
-    // void actualizeGasPayload(std::string payload);
+    void actualizeGasPayload(std::string payload);
     void actualizeDayDir(std::string new_day_dir);
     void createMissingFiles();
     

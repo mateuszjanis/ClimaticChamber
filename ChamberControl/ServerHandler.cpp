@@ -16,13 +16,14 @@ void ServerHandler::actualizeClimatePayload(std::string payload){
     std::cout << "[SERVER] Climate payload actualized: " << climate_data_payload << std::endl;
 
 }
-/*
+
 void ServerHandler::actualizeGasPayload(std::string payload){
 
     gas_data_payload.append(payload);
+    std::cout << "[SERVER] Gas payload actualized: " << climate_data_payload << std::endl;
 
 }
-*/
+
 bool ServerHandler::appendClimateData(std::string payload){
 
     actualizeClimatePayload(payload);
@@ -35,27 +36,27 @@ bool ServerHandler::appendClimateData(std::string payload){
 
     if(curl){
 
-    curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
-    curl_easy_setopt(curl, CURLOPT_URL, sftp_climate_path.c_str() );
-    std::cout << "[SERVER] sftp_climate_path: " << sftp_climate_path << std::endl;
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-    curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-    curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
-    curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
-    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)climate_data_payload.length());
+        curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
+        curl_easy_setopt(curl, CURLOPT_URL, sftp_climate_path.c_str() );
+        std::cout << "[SERVER] sftp_climate_path: " << sftp_climate_path << std::endl;
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+        curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
+        curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)climate_data_payload.length());
 
-    CURLcode res = curl_easy_perform(curl);
-    fclose(mem_file);
-        
-    if(res != CURLE_OK) {
-        std::cerr << "[SERVER]  if(curl) correct. Błąd transferu: " << curl_easy_strerror(res) << std::endl;
-        return false;
-    }
-    else {
-		std::cout << "[SERVER]  Saved climate data succesfully to server" << std::endl;
-		climate_data_payload.clear();
-		return true;
-	}
+        CURLcode res = curl_easy_perform(curl);
+        fclose(mem_file);
+            
+        if(res != CURLE_OK) {
+            std::cerr << "[SERVER]  if(curl) correct. Błąd transferu: " << curl_easy_strerror(res) << std::endl;
+            return false;
+        }
+        else {
+            std::cout << "[SERVER]  Saved climate data succesfully to server" << std::endl;
+            climate_data_payload.clear();
+            return true;
+        }
 
     } 
     else 
@@ -64,8 +65,10 @@ bool ServerHandler::appendClimateData(std::string payload){
     }
 
 }
-/*
+
 bool ServerHandler::appendGasData(){
+
+    actualizeGasPayload(payload);   // create this fun
 
     // fmemopen: Otwiera string w pamięci RAM jako wirtualny plik tylko do odczytu ("r").
     FILE* mem_file = fmemopen((void*)gas_data_payload.c_str(), gas_data_payload.length(), "r");
@@ -73,25 +76,28 @@ bool ServerHandler::appendGasData(){
 
     if(curl){
        
-    curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-    curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
-    curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
-    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)gas_data_payload.length());
+        curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
+        curl_easy_setopt(curl, CURLOPT_URL, sftp_climate_path.c_str() );
+        std::cout << "[SERVER] sftp_gas_path: " << sftp_gas_path << std::endl;
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+        curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
+        curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)gas_data_payload.length());
 
+        CURLcode res = curl_easy_perform(curl);
+        fclose(mem_file);
 
-    CURLcode res = curl_easy_perform(curl);
-    if(res != CURLE_OK) {
-        std::cerr << "if(curl) correct. Błąd transferu: " << curl_easy_strerror(res) << std::endl;
-        return false;
-    }
+        if(res != CURLE_OK) {
+            std::cerr << "if(curl) correct. Błąd transferu: " << curl_easy_strerror(res) << std::endl;
+            return false;
+        }
+        else {
+            std::cout << "[SERVER]  Saved climate data succesfully to server" << std::endl;
+            gas_data_payload.clear();
+            return true;
+        }
 
-    fclose(mem_file);
-
-    std::cout << "Saved succesfully to server" << std::endl;
-    gas_data_payload.clear();
-
-    return true;
-    
     } 
     else 
     {
@@ -99,7 +105,7 @@ bool ServerHandler::appendGasData(){
     }
 
 }
-*/
+
 
 bool ServerHandler::sendPhoto(std::string image_to_send){
 
@@ -219,9 +225,10 @@ void ServerHandler::actualizeDayDir(std::string new_day_dir) {
 
 void ServerHandler::createMissingFiles(){
      
-    std::string climate_header = "Timestamp;Humidity;Temperature;Peltier_In;Peltier_Out\n";
+    std::string climate_header = "Timestamp; Humidity; Temperature; Peltier_In; Peltier_Out\n";
 	appendClimateData(climate_header);
 	
-	// the same for gas data
+    std::string gas_header = "Timestamp; MG811_OKY_CO2_f; MQ3_EtOH_f; MQ4_CH4_f; SEN0565_CH4_f; SEN0568_H2S_f; SEN0569_EtOH_f; SEN0567_NH3_f; SEN0467_H2S_f; SEN0469_NH3_f; SCD41_CO2_f; SCD41_T_f; SCD41_H_f\n";
+	appendGasData(gas_header);
 
 }
