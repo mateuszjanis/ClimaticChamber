@@ -176,8 +176,6 @@ std::string DataHandler::getGasData(){
 
 }
 
-}
-
 void DataHandler::actualizeDate(std::string new_date){
 
     day_dir = "Data_" + new_date;

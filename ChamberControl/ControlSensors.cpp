@@ -53,7 +53,7 @@ std::string readPeltierLine(){
     std::string peltier_line;
     std::ifstream peltier_file(peltier_filepath);
     if (!peltier_file.is_open()) return "";
-    else getline(peltier_file, peltier_line)
+    else getline(peltier_file, peltier_line);
 
     return peltier_line;
 
@@ -86,10 +86,10 @@ void initialPeltierSensorsReading(){
         else {
             
             // std::string sensorsLine = readLastLine(peltier_filepath);
-            char peltierLine = readPeltierLine();
+            char peltierLine = readPeltierLine().c_str();
             char* endPtr;
 
-            temp1 = std::strtof(sensorsLine.c_str(), &endPtr);
+            temp1 = std::strtof(peltierLine, &endPtr);
             temp2 = std::strtof(endPtr + 1, nullptr);
             
             std::cout << "---------------- Current Sensor Readings ----------------" << std::endl;
