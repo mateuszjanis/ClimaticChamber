@@ -38,13 +38,13 @@ void DataHandler::run(){
             std::cout << "[DATA] Climate data handle completed!\n";
         }
 
-        if (now - last_climate_send_time >= climate_data_record_interval) {
+        if (now - last_gas_send_time >= gas_data_record_interval) {
 	
-			std::cout << "[DATA] Climate data handle activated!\n";
-			last_climate_send_time = std::chrono::steady_clock::now(); 
+			std::cout << "[DATA] Gas data handle activated!\n";
+			last_gas_send_time = std::chrono::steady_clock::now(); 
             appendGasDataLocally();
             serverSFTP.appendGasData(getClimatePayload());
-            std::cout << "[DATA] Climate data handle completed!\n";
+            std::cout << "[DATA] Gas data handle completed!\n";
         }
 		
         if (now - last_image_send_time >= image_record_interval) {
