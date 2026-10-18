@@ -6,7 +6,5 @@ sudo openvpn --config /home/pi/Downloads/VPN-AGH.2026.ovpn --daemon --log /dev/n
 
 sleep 5
 
-./CameraStart.sh &
-
 cd ChamberControl
-./ChamberStart.sh &
+./ChamberStart.sh

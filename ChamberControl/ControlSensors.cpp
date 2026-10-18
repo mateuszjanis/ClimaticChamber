@@ -9,8 +9,9 @@ double hum_mean = -127.0;
 double pelt_temp_in = -127.0;
 double pelt_temp_out = -127.0;
 
-const char* peltier_filepath = "/home/esp/Data/PeltierTemperature_1.csv";
+const char* peltier_filepath = "/home/esp/Data/PeltierTemperature.csv";
 
+/*
 std::string readLastLine(const char* filepath) {
 
     std::string lastLine;
@@ -45,6 +46,18 @@ std::string readLastLine(const char* filepath) {
 
     return lastLine;
 }
+*/
+
+std::string readPeltierLine(){
+    
+    std::string peltier_line;
+    std::ifstream peltier_file(peltier_filepath);
+    if (!peltier_file.is_open()) return "";
+    else getline(peltier_file, peltier_line);
+
+    return peltier_line;
+
+}
 
 double readSensor(const std::string& filepath) {
 
@@ -72,10 +85,11 @@ void initialPeltierSensorsReading(){
         } 
         else {
             
-            std::string sensorsLine = readLastLine(peltier_filepath);
+            // std::string sensorsLine = readLastLine(peltier_filepath);
+            const char* peltierLine = readPeltierLine().c_str();
             char* endPtr;
 
-            temp1 = std::strtof(sensorsLine.c_str(), &endPtr);
+            temp1 = std::strtof(peltierLine, &endPtr);
             temp2 = std::strtof(endPtr + 1, nullptr);
             
             std::cout << "---------------- Current Sensor Readings ----------------" << std::endl;
@@ -165,7 +179,7 @@ bool readPeltierSensors(){
         return true; // file does not exist / is open
     }
 
-    std::string sensorsLine = readLastLine(peltier_filepath);
+    std::string sensorsLine = readPeltierLine();
     char* endPtr;
 
     float temp1 = std::strtof(sensorsLine.c_str(), &endPtr);

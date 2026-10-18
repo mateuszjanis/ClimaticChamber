@@ -9,57 +9,80 @@
 #include <chrono>
 #include <ctime>
 #include <sys/stat.h>
+#include <vector>
 
 class ServerHandler{
 
     CURL *curl;
 
-    // std::string gas_data_payload;
+    std::string gas_data_payload;
     std::string climate_data_payload;
-    std::string image_dir_path;
+    std::vector<std::string> photo_payload;
     
-    const std::string sftp_file_path;
-    const std::string sftp_image_path;
+    const std::string sftp_path;
+    const std::string passwd_file_path;
+    const std::string data_dir;
+    const std::string climate_filename;
+    const std::string gas_filename;
+    const std::string images_dir;
+
+    std::string day_dir;
 
 public:
 
-    ServerHandler(const char* sftp_path, std::string file_path, std::string image_path) : climate_data_payload(""), image_dir_path("../Images/"), 
-				sftp_file_path(file_path), sftp_image_path(image_path) {
+    ServerHandler(const char* sftp_path, const std::string passwd_file_path, const std::string data_dir, 
+                    const std::string climate_filename, const std::string gas_filename,
+                    const std::string images_dir, std::string day_dir) : 
+                        
+                        climate_data_payload(""),
+                        photo_payload({}),
+                                            
+                        sftp_path(sftp_path), 
+                        passwd_file_path(passwd_file_path),
+                        data_dir(data_dir), 
+                        climate_filename(climate_filename),
+                        gas_filename(gas_filename),
+                        images_dir(images_dir),
+						day_dir(day_dir) {
+	
+							std::string sftp_passwd = parseENV();
+		
+			curl_global_init(CURL_GLOBAL_DEFAULT);
+			curl = curl_easy_init();
 
-        std::string sftp_passwd = parseENV();
+			if(curl) {
+				curl_easy_setopt(curl, CURLOPT_URL, sftp_path );
+				curl_easy_setopt(curl, CURLOPT_USERPWD, sftp_passwd.c_str());
+				curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
-        curl_global_init(CURL_GLOBAL_DEFAULT);
-        curl = curl_easy_init(); // może musi być stworzone w main
+				std::cout << "[SERVER] CURL ready!\n";
+			}
+			else {
+				std::cout << "[SERVER] CURL error!\n";
+			}
+			std::cout << "[SERVER] ServerHandler initialized\n";
 
-        if(curl) {
-            curl_easy_setopt(curl, CURLOPT_URL, sftp_path );
-            curl_easy_setopt(curl, CURLOPT_USERPWD, sftp_passwd.c_str());
-            curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-
-            std::cout << "[SERVER] CURL ready!\n";
-        }
-        else {
-            std::cout << "[SERVER] CURL error!\n";
-        }
-
-        std::cout << "[SERVER] ServerHandler initialized\n";
-    }
+	}
 
     ~ServerHandler(){
         curl_easy_cleanup(curl);
     }
 
-    bool appendClimateData();
-    // bool appendGasData();
-    bool sendImage();
+    bool appendClimateData(std::string payload);
+    bool appendGasData(std::string payload);
+    bool sendPhoto(std::string image_to_send);
     // bool sendState();
     void actualizeClimatePayload(std::string payload);
-    // void actualizeGasPayload(std::string payload);
+    void actualizeGasPayload(std::string payload);
+    void actualizeDayDir(std::string new_day_dir);
+    void createMissingFiles();
+    
+    // create function to put payload in it and path to append to file ...
 
 private:
 
     // bool createNewFile();
-    std::string findImageToSend();
+    // std::string findImageToSend();
     std::string parseENV();
 
 };

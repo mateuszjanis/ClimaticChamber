@@ -39,7 +39,8 @@ const std::string compile_filepath = "ChamberControl";
 ////////////////////////////////////////////////////////////////////////////////
 
 double readSensor(const std::string& filepath);
-std::string readLastLine(const char* filepath);
+// std::string readLastLine(const char* filepath);
+std::string readPeltierLine();
 
 void initialSensorsReading();
 void initialPeltierSensorsReading();
