@@ -11,6 +11,8 @@
 #include <sys/stat.h>
 #include <nlohmann/json.hpp>
 
+// #include filessystem needed???
+
 class DataHandler{
 
     const std::string data_dir;
@@ -68,6 +70,7 @@ private:
     std::string getGasData();
     void takePhoto(std::string image_file_path);
     void createNecessaryDirectoriesAndFiles();
+    void deleteDayPhotos(std::string& last_date);
 
 };
 

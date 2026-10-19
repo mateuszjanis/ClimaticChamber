@@ -76,6 +76,7 @@ public:
     void actualizeGasPayload(std::string payload);
     void actualizeDayDir(std::string new_day_dir);
     void createMissingFiles();
+    bool isPhotoPayloadEmpty() { return photo_payload.empty() };
     
     // create function to put payload in it and path to append to file ...
 

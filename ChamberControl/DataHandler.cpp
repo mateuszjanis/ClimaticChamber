@@ -15,6 +15,8 @@ void DataHandler::run(){
     auto last_climate_send_time = std::chrono::steady_clock::now();
     auto last_image_send_time = std::chrono::steady_clock::now();
 
+    std::string last_date = "";
+
     while (true) {
 
         std::string checked_date = getDateString();
@@ -24,6 +26,7 @@ void DataHandler::run(){
         
         if (checked_date != current_date) {
             actualizeDate(checked_date);
+            last_date = current_date;
             current_date = checked_date;
         }
 
@@ -61,6 +64,13 @@ void DataHandler::run(){
             // serverSFTP.sendPhoto(image_filename);
             if (serverSFTP.sendPhoto(image_filename)) { std::cout << "[DATA] sent correctly\n"; }
             else { std::cout << "[DATA] sent incorrectly\n"; }
+
+            if (!last_date.empty() && serverSFTP.isPhotoPayloadEmpty()){
+
+                deleteDayPhotos(last_date);
+                last_date.erase(last_date.begin());
+
+            }
             
             std::cout << "[DATA] Image handle completed!\n"; 
 
@@ -222,4 +232,11 @@ void DataHandler::createNecessaryDirectoriesAndFiles() {		// <<------- ADD HERE 
     }
     
     serverSFTP.createMissingFiles();
+}
+
+void DataHandler::deleteDayPhotos(std::string& last_date){
+
+    std::string dir_to_delete = data_dir + "/" + "Data_" + last_date + "/" + images_dir;
+    std::filesystem::remove_all(dir_to_delete);
+
 }
