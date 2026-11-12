@@ -23,6 +23,7 @@
     "passwd_file_path": "../.env",
     "data_dir": "../Data",
     "climate_filename": "ClimateRecords.csv",
+    "esp_path": "/home/esp/Data/",
     "gas_filename": "GasRecords.csv",
     "images_dir": "Images",
     "take_photo_script": "TakePhoto.sh"

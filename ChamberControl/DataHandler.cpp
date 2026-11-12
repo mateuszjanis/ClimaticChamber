@@ -165,7 +165,7 @@ std::string DataHandler::getClimatePayload(){
 std::string DataHandler::getGasPayload(){
     
     std::string gas_line;
-    std::ifstream gas_file(gas_filename);
+    std::ifstream gas_file(esp_path + "/" + gas_filename);
     if (!gas_file.is_open()) return "";
     else getline(gas_file, gas_line);
 

@@ -17,6 +17,7 @@ class DataHandler{
 
     const std::string data_dir;
     const std::string climate_filename;
+        
     const std::string gas_filename;
     const std::string images_dir;
     const std::string take_photo_script;
@@ -37,6 +38,7 @@ public:
         gas_filename(       config_json["paths"]["gas_filename"].get<std::string>()),
         images_dir(         config_json["paths"]["images_dir"].get<std::string>()),
         take_photo_script(  config_json["paths"]["take_photo_script"].get<std::string>()),
+        esp_path(           config_json["paths"]["esp_path"].get<std::string>()),
 
         day_dir("Data_" + getDateString()),
 
