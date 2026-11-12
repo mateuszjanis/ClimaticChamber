@@ -139,13 +139,14 @@ void PeltierController::runTemperatureControl(){
 
         bool sensors_reading_error = updateSensors();
         printSensors();
-        
-        double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
-        
-        if(pelt_temp_diff > temp_diff_fan_threshold || pelt_temp_in >= 57 || pelt_temp_out >= 57) fanOn();
-        else fanOff();
 
         if (!sensors_reading_error){
+                
+                double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
+        
+                if(pelt_temp_diff > temp_diff_fan_threshold || pelt_temp_in >= 57 || pelt_temp_out >= 57) fanOn();
+                else fanOff();
+
                 switch (curr_mode) {
                         case IDLE: // idle
                                 if (temp_mean < temp_min) {

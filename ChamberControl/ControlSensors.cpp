@@ -9,56 +9,6 @@ double hum_mean = -127.0;
 double pelt_temp_in = -127.0;
 double pelt_temp_out = -127.0;
 
-const char* peltier_filepath = "/home/esp/Data/PeltierTemperature.csv";
-
-/*
-std::string readLastLine(const char* filepath) {
-
-    std::string lastLine;
-    
-    // 1. Otwarcie pliku na końcu (ate) i w trybie binarnym
-    std::ifstream file(filepath, std::ios::binary | std::ios::ate);
-    if (!file.is_open()) return "";
-
-    // Pobranie rozmiaru pliku
-    std::streamoff pos = file.tellg();
-    if (pos == 0) return ""; // Zabezpieczenie przed pustym plikiem
-
-    char ch = '\0';
-    
-    // Pominięcie ewentualnego pustego znaku nowej linii na samym końcu pliku
-    file.seekg(-1, std::ios::end);
-    file.get(ch);
-    if (ch == '\n') pos--;
-
-    // Szukanie początku ostatniej linii od końca
-    while (pos > 0) {
-        file.seekg(--pos);
-        file.get(ch);
-        if (ch == '\n') {
-            break; 
-        }
-    }
-
-    // Zapisanie wyniku do zmiennej
-    std::getline(file, lastLine);
-    file.close();
-
-    return lastLine;
-}
-*/
-
-std::string readPeltierLine(){
-    
-    std::string peltier_line;
-    std::ifstream peltier_file(peltier_filepath);
-    if (!peltier_file.is_open()) return "";
-    else getline(peltier_file, peltier_line);
-
-    return peltier_line;
-
-}
-
 double readSensor(const std::string& filepath) {
 
     std::ifstream file(filepath);
@@ -75,49 +25,31 @@ void initialPeltierSensorsReading(){
     
     bool peltier_sensors_reading_error = true;
 
-    float temp1;
-    float temp2;
+    double temp1;
+    double temp2;
 
     while (peltier_sensors_reading_error) {
         
-        if (access( peltier_filepath, F_OK ) == -1 ){
-            peltier_sensors_reading_error = true; // file does not exist / is open
+        temp1 = readSensor(pelt_temp_in_path);
+        temp2 = readSensor(pelt_temp_out_path);
+
+        std::cout << "---------------- Current Sensor Readings ----------------" << std::endl;
+        std::cout << "PeltIn: " << temp1 << " °C ";
+        std::cout << "PeltOut: " << temp2 << " °C " << std::endl;
+        std::cout << "---------------------------------------------------------" << std::endl;
+        std::cout << "Checking if peltier sensors read correctly: ";
+                
+        if (temp1 > 0 && temp2 > 0) {
+            peltier_sensors_reading_error = false;
+            std::cout << "YES\n";
         } 
         else {
-            
-            // std::string sensorsLine = readLastLine(peltier_filepath);
-            const char* peltierLine = readPeltierLine().c_str();
-            char* endPtr;
-
-            temp1 = std::strtof(peltierLine, &endPtr);
-            temp2 = std::strtof(endPtr + 1, nullptr);
-            
-            std::cout << "---------------- Current Sensor Readings ----------------" << std::endl;
-            std::cout << "PeltIn: " << temp1 << " °C ";
-            std::cout << "PeltOut: " << temp2 << " °C " << std::endl;
-            std::cout << "---------------------------------------------------------" << std::endl;
-            std::cout << "Checking if peltier sensors read correctly: ";
-
-            if (std::filesystem::last_write_time(peltier_filepath) > 
-                std::filesystem::last_write_time(compile_filepath)){
-                    
-                    if (temp1 > 0 && temp2 > 0){    // warunek do dodania aby sprawdzic czy aktualne dane
-                        peltier_sensors_reading_error = false;
-                        std::cout << "YES\n";
-                        break;
-                    } 
-                    else {
-                        std::cout << "NO. Trying again\n";
-                    }
-            }
-            else {
-                std::cout << "NO. Trying again\n";
-            }
+            std::cout << "NO. Trying again\n";
         }
-        
-        std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
-    
+
     }
+    
+    std::this_thread::sleep_for(std::chrono::seconds(sensors_update_interval));
 
     pelt_temp_in = temp1;
     pelt_temp_out = temp2;
@@ -173,50 +105,23 @@ void initialSensorsReading(){
 
 }
 
-bool readPeltierSensors(){
-    
-    if (access( peltier_filepath, F_OK ) == -1 ){
-        return true; // file does not exist / is open
-    }
-
-    std::string sensorsLine = readPeltierLine();
-    char* endPtr;
-
-    float temp1 = std::strtof(sensorsLine.c_str(), &endPtr);
-    float temp2 = std::strtof(endPtr + 1, nullptr);
-    
-    auto last_write_time = std::filesystem::last_write_time(peltier_filepath);
-    auto compile_time = std::filesystem::last_write_time(compile_filepath);
-    
-    bool is_file_current = ( last_write_time > compile_time );
-
-    if (std::abs(temp1 - pelt_temp_in) > acceptable_sens_diff || std::abs(temp2 - pelt_temp_out) > acceptable_sens_diff || !is_file_current) {
-        std::cout << "Error reading Peltier sensors: " << temp1 << ", " << temp2 << std::endl;
-        return true; // Return true to indicate an error
-    } else {
-        pelt_temp_in = temp1;
-        pelt_temp_out = temp2;
-        std::cout << "Peltier sensors read correctly: " << std::endl;
-        return false; // Return false to indicate successful reading
-    }
-    
-    return true; // Return true to indicate an error if the line is empty or malformed
-
-}
-
 bool updateSensors() {
 
     bool sensors_reading_error = false;
 
-    double temp_up_temp = readSensor(temp_up_path);
-    double hum_up_temp = readSensor(hum_up_path);
-    double temp_down_temp = readSensor(temp_down_path);
-    double hum_down_temp = readSensor(hum_down_path);
+    double temp_up_temp         = readSensor(temp_up_path);
+    double hum_up_temp          = readSensor(hum_up_path);
+    double temp_down_temp       = readSensor(temp_down_path);
+    double hum_down_temp        = readSensor(hum_down_path);
+    double pelt_temp_in_temp    = readSensor(pelt_temp_in_path);
+    double pelt_temp_out_temp   = readSensor(pelt_temp_out_path);
 
-    if (std::abs(temp_up_temp - temp_up) > acceptable_sens_diff || std::abs(hum_up_temp - hum_up) > acceptable_sens_diff) {
+    if (std::abs(temp_up_temp - temp_up) > acceptable_sens_diff || 
+        std::abs(hum_up_temp - hum_up) > acceptable_sens_diff) 
+    {
         sensors_reading_error =  true; // error
         std::cout << "Wrong DHT up reading\n";
-        // std::cout << "temp_up_temp: " << temp_up_temp << " vs temp_up: " << temp_up << std::endl;
+        // std::cout << "temp_up_temp: " << temp_up_temp << " vs temp_up: " << temp_up << std::endl; // debug
         // std::cout << "hum_up_temp: " << hum_up_temp << " vs hum_up: " << hum_up << std::endl;
     } else {
         // successful reading
@@ -225,11 +130,13 @@ bool updateSensors() {
         std::cout << "Correct DHT up reading\n";
     }
 
-    if (std::abs(temp_down_temp - temp_down) > acceptable_sens_diff || std::abs(hum_down_temp - hum_down) > acceptable_sens_diff) {
+    if (std::abs(temp_down_temp - temp_down) > acceptable_sens_diff || 
+        std::abs(hum_down_temp - hum_down) > acceptable_sens_diff) 
+    {    
         sensors_reading_error =  true; // error
         std::cout << "Wrong DHT down reading\n";
-        // std::cout << "temp_up_temp: " << temp_up_temp << " vs temp_up: " << temp_up << std::endl;
-        // std::cout << "hum_up_temp: " << hum_up_temp << " vs hum_up: " << hum_up << std::endl;
+        // std::cout << "temp_down_temp: " << temp_down_temp << " vs temp_down: " << temp_down << std::endl; // debug
+        // std::cout << "hum_down_temp: " << hum_down_temp << " vs hum_down: " << hum_down << std::endl;
     } else {
         // successful reading
         temp_down = temp_down_temp;
@@ -242,12 +149,21 @@ bool updateSensors() {
         hum_mean = (hum_up + hum_down) / 2.0;
     }
 
-    if (readPeltierSensors()) {
-        sensors_reading_error =   true; // error reading Peltier sensors
-    }
+    if (std::abs(pelt_temp_in_temp - pelt_temp_in) > acceptable_sens_diff || 
+        std::abs(pelt_temp_out_temp - pelt_temp_out) > acceptable_sens_diff ) 
+    {
 
-    // pelt_temp_in = readSensor(pelt_temp_in_path);
-    // pelt_temp_out = readSensor(pelt_temp_out_path);
+        std::cout << "Error reading Peltier sensors: " << pelt_temp_in_temp << ", " 
+                  << pelt_temp_out_temp << std::endl;
+        sensors_reading_error = true; // error
+    
+    } else {
+    
+        pelt_temp_in = pelt_temp_in_temp;
+        pelt_temp_out = pelt_temp_out_temp;
+        std::cout << "Peltier sensors read correctly: " << std::endl;
+    
+    }
 
     return sensors_reading_error; // Return the error status
 
