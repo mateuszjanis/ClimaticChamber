@@ -35,18 +35,24 @@ void DataHandler::run(){
         if (now - last_climate_send_time >= climate_data_record_interval) {
 	
 			std::cout << "[DATA] Climate data handle activated!\n";
-			last_climate_send_time = std::chrono::steady_clock::now(); 
-            appendClimateDataLocally();
-            serverSFTP.appendClimateData(getClimatePayload());
+			last_climate_send_time = std::chrono::steady_clock::now();
+            
+            std::string climate_payload = getClimatePayload();
+            appendClimateDataLocally(climate_payload);
+            serverSFTP.appendData(climate_payload, climate_filename, 'c');
+
             std::cout << "[DATA] Climate data handle completed!\n";
         }
 
         if (now - last_gas_send_time >= gas_data_record_interval) {
 	
 			std::cout << "[DATA] Gas data handle activated!\n";
-			last_gas_send_time = std::chrono::steady_clock::now(); 
-            appendGasDataLocally();
-            serverSFTP.appendGasData(getClimatePayload());
+			last_gas_send_time = std::chrono::steady_clock::now();
+
+            std::string gas_payload = getGasPayload();
+            appendGasDataLocally(gas_payload);
+            serverSFTP.appendData(gas_payload, gas_filename, 'g');
+            
             std::cout << "[DATA] Gas data handle completed!\n";
         }
 		
@@ -80,14 +86,14 @@ void DataHandler::run(){
     }
 }
 
-void DataHandler::appendClimateDataLocally(){
+void DataHandler::appendClimateDataLocally(std::string& climate_payload){
 
     std::string climate_data_file_path = data_dir + "/" + day_dir + "/" + climate_filename;
     std::ofstream file(climate_data_file_path, std::ios::app);
     
     if (file.is_open()) {
 
-        file << getClimatePayload();
+        file << climate_payload;
         std::cout << "[DATA] Climate data appended\n";
 
     }
@@ -99,13 +105,13 @@ void DataHandler::appendClimateDataLocally(){
 
 }
 
-void DataHandler::appendGasDataLocally(){
+void DataHandler::appendGasDataLocally(std::string& gas_payload){
 
     std::string gas_data_file_path = data_dir + "/" + day_dir + "/" + gas_filename;
     std::ofstream file(gas_data_file_path, std::ios::app);
     
     if (file.is_open()) {
-        file << getGasPayload();
+        file << gas_payload;
         std::cout << "[DATA] Gas data appended\n";
     }
     else{
@@ -156,6 +162,17 @@ std::string DataHandler::getClimatePayload(){
 
 }
 
+std::string DataHandler::getGasPayload(){
+    
+    std::string gas_line;
+    std::ifstream gas_file(gas_filename);
+    if (!gas_file.is_open()) return "";
+    else getline(gas_file, gas_line);
+
+    return getTimeString() + ";" + gas_line;
+
+}
+
 std::string DataHandler::getImageFileName() {
 
     std::time_t now = std::time(nullptr);
@@ -167,17 +184,6 @@ std::string DataHandler::getImageFileName() {
     std::strftime(date_buffer, sizeof(date_buffer), "%Y-%m-%d_%H-%M-%S", &tm_struct);
     
     return std::string("image_") + std::string(date_buffer) + std::string(".jpg");
-}
-
-std::string DataHandler::getGasPayload(){
-    
-    std::string gas_line;
-    std::ifstream gas_file(gas_filename);
-    if (!gas_file.is_open()) return "";
-    else getline(gas_file, gas_line);
-
-    return getTimeString() + ";" + gas_line;
-
 }
 
 void DataHandler::actualizeDate(std::string new_date){

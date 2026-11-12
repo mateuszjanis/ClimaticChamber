@@ -22,8 +22,6 @@ class ServerHandler{
     const std::string sftp_path;
     const std::string passwd_file_path;
     const std::string data_dir;
-    const std::string climate_filename;
-    const std::string gas_filename;
     const std::string images_dir;
 
     std::string day_dir;
@@ -31,7 +29,6 @@ class ServerHandler{
 public:
 
     ServerHandler(const char* sftp_path, const std::string passwd_file_path, const std::string data_dir, 
-                    const std::string climate_filename, const std::string gas_filename,
                     const std::string images_dir, std::string day_dir) : 
                         
                         climate_data_payload(""),
@@ -40,12 +37,10 @@ public:
                         sftp_path(sftp_path), 
                         passwd_file_path(passwd_file_path),
                         data_dir(data_dir), 
-                        climate_filename(climate_filename),
-                        gas_filename(gas_filename),
                         images_dir(images_dir),
 						day_dir(day_dir) {
 	
-							std::string sftp_passwd = parseENV();
+			std::string sftp_passwd = parseENV();
 		
 			curl_global_init(CURL_GLOBAL_DEFAULT);
 			curl = curl_easy_init();
@@ -68,13 +63,14 @@ public:
         curl_easy_cleanup(curl);
     }
 
-    bool appendClimateData(std::string payload);
-    bool appendGasData(std::string payload);
-    bool sendPhoto(std::string image_to_send);
+    // bool appendClimateData(std::string& payload);
+    // bool appendGasData(std::string& payload);
+
+    bool appendData(std::string& payload, const std::string& filename, char& type);
+
+    bool sendPhoto(std::string& image_to_send);
     // bool sendState();
-    void actualizeClimatePayload(std::string payload);
-    void actualizeGasPayload(std::string payload);
-    void actualizeDayDir(std::string new_day_dir);
+    void actualizeDayDir(std::string& new_day_dir);
     void createMissingFiles();
     bool isPhotoPayloadEmpty() { return photo_payload.empty() };
     
