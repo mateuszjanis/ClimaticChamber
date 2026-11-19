@@ -10,18 +10,18 @@ bool ServerHandler::createNewFile(){
 }
 */
 
-bool ServerHandler::appendData(std::string& payload, const std::string& filename, char& type) {
-    
+bool ServerHandler::appendData(std::string& payload, const std::string& filename, char type) {
+
     if (type == 'g') {
         gas_data_payload.append(payload);
-        std::string& data_payload = gas_data_payload;
     } else if (type == 'c') {
         climate_data_payload.append(payload);
-        std::string& data_payload = climate_data_payload;
     } else {
         std::cerr << "[SERVER] Unknown type: " << type << std::endl;
         return false;
     }
+
+    std::string& data_payload = (type == 'g') ? gas_data_payload : climate_data_payload;
 
     if (!curl) return false;
 
@@ -225,9 +225,8 @@ void ServerHandler::actualizeDayDir(std::string& new_day_dir) {
 void ServerHandler::createMissingFiles(){
      
     std::string climate_header = "Timestamp; Humidity; Temperature; Peltier_In; Peltier_Out\n";
-	appendClimateData(climate_header);
+	climate_data_payload.append(climate_header);
 	
     std::string gas_header = "Timestamp; MG811_OKY_CO2_f; MQ3_EtOH_f; MQ4_CH4_f; SEN0565_CH4_f; SEN0568_H2S_f; SEN0569_EtOH_f; SEN0567_NH3_f; SEN0467_H2S_f; SEN0469_NH3_f; SCD41_CO2_f; SCD41_T_f; SCD41_H_f\n";
-	appendGasData(gas_header);
-
+	gas_data_payload.append(gas_header);
 }

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-nmcli connection up hotspot
+nmcli connection up hotspot_chamber
 
-sudo openvpn --config /home/pi/Downloads/VPN-AGH.2026.ovpn --daemon --log /dev/null
+sudo openvpn --config /home/pi/Downloads/VPN-AGH.2027.ovpn --daemon --log /dev/null
 
 sleep 5
 
