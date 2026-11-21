@@ -1,0 +1,10 @@
+[SERVER] server_file_path: sftp://student.agh.edu.pl/home/imirgrp/matjanis/public_html/Data/Data_2026-11-19/ClimateRecords.csv
+* Host student.agh.edu.pl:22 was resolved.
+* IPv6: 2001:6d8:10:1127::6245
+* IPv4: 149.156.98.69
+*   Trying [2001:6d8:10:1127::6245]:22...
+*   Trying 149.156.98.69:22...
+* Connection timed out after 30002 milliseconds
+* closing connection #0
+[SERVER] Błąd transferu pliku ClimateRecords.csv: Timeout was reached
+[DATA] Climate data handle completed!

@@ -1,10 +1,10 @@
 #include "PeltierController.h"
 
-const int HEAT_PIN_1 = 17; 
-const int HEAT_PIN_2 = 23;
-const int COOL_PIN_1 = 24;
-const int COOL_PIN_2 = 27;
-const int FAN_PIN = 25;
+const int HEAT_PIN_1 = 24; // 24
+const int HEAT_PIN_2 = 27; // 27
+const int COOL_PIN_1 = 17; // 17
+const int COOL_PIN_2 = 23; // 23
+const int FAN_PIN = 25;    //
 
 gpiod::line::offsets COOL_OFFSETS = {COOL_PIN_1, COOL_PIN_2};
 gpiod::line::offsets HEAT_OFFSETS = {HEAT_PIN_1, HEAT_PIN_2};
@@ -139,13 +139,14 @@ void PeltierController::runTemperatureControl(){
 
         bool sensors_reading_error = updateSensors();
         printSensors();
-        
-        double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
-        
-        if(pelt_temp_diff > temp_diff_fan_threshold || pelt_temp_in >= 57 || pelt_temp_out >= 57) fanOn();
-        else fanOff();
 
         if (!sensors_reading_error){
+                
+                double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
+        
+                if(pelt_temp_diff > temp_diff_fan_threshold || pelt_temp_in >= 57 || pelt_temp_out >= 57) fanOn();
+                else fanOff();
+
                 switch (curr_mode) {
                         case IDLE: // idle
                                 if (temp_mean < temp_min) {

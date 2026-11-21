@@ -54,7 +54,8 @@ void parseConfigurationFile(nlohmann::json& configuration_json){
 
 /*
 void createConfigurationESP(){
-
+    // interval for gas sensors
+    // 
 }
 
 */
