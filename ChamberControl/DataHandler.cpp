@@ -358,7 +358,7 @@ void DataHandler::sendPhoto(std::string& image_file_path_to_send){
     while (!photo_payload.empty()) {
 
         std::string sftp_image_path = sftp_path + photo_payload.front();
-		std::string image_file_path = data_dir + photo_payload.front();
+		std::string image_file_path = data_dir  + "/" + photo_payload.front();
 		
         std::cout << "[SERVER] Sending " << image_file_path << " to: "<< sftp_image_path << std::endl;
 
