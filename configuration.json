@@ -4,7 +4,7 @@
 },
 "settings": {
     "fan_treshold": 25,
-    "temp_sensitivity": 2.0,
+    "temp_sensitivity": 1.0,
     "temp_diff_toggle_threshold": 4,
     "temp_diff_fan_threshold": 25,
     "acceptable_sens_diff": 10.0,
