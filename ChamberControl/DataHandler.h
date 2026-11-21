@@ -28,7 +28,6 @@ class DataHandler{
     std::string day_dir;
 
     const std::chrono::minutes climate_data_record_interval;
-    const std::chrono::minutes gas_data_record_interval;
     const std::chrono::minutes image_record_interval;
 
     // server 
@@ -55,7 +54,6 @@ public:
         day_dir("Data_" + getDateString()),
 
         climate_data_record_interval(   std::chrono::minutes(config_json["settings"]["climate_data_record_interval"])),
-        gas_data_record_interval(       std::chrono::minutes(config_json["settings"]["gas_data_record_interval"])),
         image_record_interval(          std::chrono::minutes(config_json["settings"]["image_record_interval"])),
 
         gas_data_payload(""),
