@@ -84,41 +84,6 @@ void DataHandler::run(){
     }
 }
 
-// void DataHandler::appendClimateDataLocally(std::string& climate_payload){
-
-//     std::string climate_data_file_path = data_dir + "/" + day_dir + "/" + climate_filename;
-//     std::ofstream file(climate_data_file_path, std::ios::app);
-    
-//     if (file.is_open()) {
-
-//         file << climate_payload;
-//         std::cout << "[DATA] Climate data appended\n";
-
-//     }
-//     else{
-
-//         std::cout << "[DATA] Climate data NOT appended\n";
-
-//     }
-
-// }
-
-// void DataHandler::appendGasDataLocally(std::string& gas_payload){
-
-//     std::string gas_data_file_path = data_dir + "/" + day_dir + "/" + gas_filename;
-//     std::ofstream file(gas_data_file_path, std::ios::app);
-    
-//     if (file.is_open()) {
-//         file << gas_payload;
-//         std::cout << "[DATA] Gas data appended\n";
-//     }
-//     else{
-//         std::cout << "[DATA] Gas data NOT appended\n";
-//     }
-
-// }
-
-// both upper functions merged here
 void DataHandler::appendDataLocally(std::string& payload_loc, char type){
 
     std::string data_file_path = data_dir + "/" + day_dir + "/" ;
@@ -377,10 +342,11 @@ void DataHandler::sendPhoto(std::string& image_file_path_to_send){
         curl_easy_setopt(curl, CURLOPT_READDATA, file);
         CURLcode res = curl_easy_perform(curl);
         fclose(file);
-        curl_easy_cleanup(curl);
+        
 
         if (res != CURLE_OK) {
             std::cerr << "[SERVER] Błąd przesyłania: " << curl_easy_strerror(res) << '\n';
+            curl_easy_cleanup(curl);
             return;
         }
         else {
@@ -388,6 +354,8 @@ void DataHandler::sendPhoto(std::string& image_file_path_to_send){
             photo_payload.erase(photo_payload.begin());
         }
     }
+
+    curl_easy_cleanup(curl);
 }
 
 std::string DataHandler::parseENV(){
