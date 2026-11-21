@@ -12,7 +12,7 @@ void DataHandler::run(){
     createNecessaryDirectoriesAndFiles();
 
     // auto last_gas_send_time = std::chrono::steady_clock::now();
-    auto last_gas_send_ftime = std::filesystem::last_write_time(file_path.c_str());
+    auto last_gas_send_ftime = std::filesystem::last_write_time((esp_path + "/" + gas_filename).c_str());
     auto last_climate_send_time = std::chrono::steady_clock::now();
     auto last_image_send_time = std::chrono::steady_clock::now();
 
@@ -46,7 +46,8 @@ void DataHandler::run(){
         }
 
         // check if file has changed
-        auto last_gas_modified_ftime = std::filesystem::last_write_time(file_path.c_str(), ec);
+        std::error_code ec;
+        auto last_gas_modified_ftime = std::filesystem::last_write_time((esp_path + "/" + gas_filename).c_str(), ec);
 
         if (!ec && (last_gas_modified_ftime > last_gas_send_ftime)) {
 	

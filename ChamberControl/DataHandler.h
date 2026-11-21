@@ -10,6 +10,7 @@
 #include <ctime>
 #include <sys/stat.h>
 #include <nlohmann/json.hpp>
+#include <system_error>
 
 // #include filessystem needed???
 
@@ -48,7 +49,7 @@ public:
         image_record_interval(std::chrono::minutes(config_json["settings"]["image_record_interval"])),
         
         serverSFTP(config_json["paths"]["sftp_path"].get<std::string>(),
-				   config_json["paths"]["sftp_username"].get<std::string>(),
+//				   config_json["paths"]["sftp_username"].get<std::string>(),
 				   config_json["paths"]["passwd_file_path"].get<std::string>(), 
 				   data_dir, images_dir, day_dir) 
         {
