@@ -58,9 +58,9 @@ public:
         gas_data_record_interval(       std::chrono::minutes(config_json["settings"]["gas_data_record_interval"])),
         image_record_interval(          std::chrono::minutes(config_json["settings"]["image_record_interval"])),
 
-        gas_data_payload("");
-        climate_data_payload("");
-        photo_payload("");
+        gas_data_payload(""),
+        climate_data_payload(""),
+        photo_payload(std::vector<std::string>()),
 
         sftp_path(config_json["paths"]["sftp_path"].get<std::string>()),
         passwd_file_path(config_json["paths"]["passwd_file_path"].get<std::string>()),
@@ -92,10 +92,11 @@ private:
     // server functions
     std::string parseENV();
 
-    bool appendDataToServer(std::string& payload, char type);
-    bool sendPhoto(std::string& image_to_send);
+    void appendDataToServer(std::string& payload, char type);
+    void sendPhoto(std::string& image_to_send);
 
     void createMissingFiles();
+    bool fileExistsOnServer(CURL* curl);
 };
 
     

@@ -18,7 +18,7 @@ void DataHandler::run(){
         std::string checked_date = getDateString();
         auto now = std::chrono::steady_clock::now(); // <- przekazywanie tej daty i z niej tworzenie payloadów
 
-        // serverSFTP.sendState();
+        // sendState();
         
         if (checked_date != current_date) {
             actualizeDate(checked_date);
@@ -50,9 +50,9 @@ void DataHandler::run(){
 			last_gas_send_ftime = last_gas_modified_ftime;
 
             std::string gas_payload = getGasPayload();
-            appendDataLocally(climate_payload, 'g');
-            appendDataToServer(climate_payload, 'g');
-            
+            appendDataLocally(gas_payload, 'g');
+            appendDataToServer(gas_payload, 'g');
+
             std::cout << "[DATA] Gas data handle completed!\n";
         }
 		
@@ -212,7 +212,6 @@ std::string DataHandler::getImageFileName() {
 void DataHandler::actualizeDate(std::string new_date){
 
     day_dir = "Data_" + new_date;
-    serverSFTP.actualizeDayDir(day_dir);
     createNecessaryDirectoriesAndFiles();
     std::cout << "New date detected: " << new_date << "\n";
 
@@ -254,13 +253,13 @@ void DataHandler::createNecessaryDirectoriesAndFiles() {		// <<------- ADD HERE 
 
     // Create the data file if it doesn't exist
     if (!std::filesystem::exists(gas_file_path)) {
-        std::ofstream climate_file(gas_file_path);
-        climate_file << "Timestamp; MG811_OKY_CO2_f; MQ3_EtOH_f; MQ4_CH4_f; SEN0565_CH4_f; SEN0568_H2S_f; SEN0569_EtOH_f; SEN0567_NH3_f; SEN0467_H2S_f; SEN0469_NH3_f; SCD41_CO2_f; SCD41_T_f; SCD41_H_f\n";
-        climate_file.close();
+        std::ofstream gas_file(gas_file_path);
+        gas_file << "Timestamp; MG811_OKY_CO2_f; MQ3_EtOH_f; MQ4_CH4_f; SEN0565_CH4_f; SEN0568_H2S_f; SEN0569_EtOH_f; SEN0567_NH3_f; SEN0467_H2S_f; SEN0469_NH3_f; SCD41_CO2_f; SCD41_T_f; SCD41_H_f\n";
+        gas_file.close();
         std::cout << "[DATA] Created file: " << gas_file_path << "\n";
     }
     
-    serverSFTP.createMissingFiles();
+    createMissingFiles();
 }
 
 void DataHandler::deleteDayPhotos(std::string& last_date){
@@ -276,16 +275,17 @@ void DataHandler::deleteDayPhotos(std::string& last_date){
 void DataHandler::appendDataToServer(std::string& payload, char type) {
 
     std::string url = sftp_path + day_dir + "/";
+    std::string* data_payload = nullptr;
 
     switch (type) {
         case 'g':
             gas_data_payload.append(payload);
-            std::string& data_payload = gas_data_payload;
+            data_payload = &gas_data_payload;
             url += gas_filename;
             break;
         case 'c':
             climate_data_payload.append(payload);
-            std::string& data_payload = climate_data_payload;
+            data_payload = &climate_data_payload;
             url += climate_filename;
             break;
         default:
@@ -293,7 +293,7 @@ void DataHandler::appendDataToServer(std::string& payload, char type) {
             return;
     }
 
-    FILE* mem_file = fmemopen((void*)data_payload.c_str(), data_payload.length(), "r");
+    FILE* mem_file = fmemopen(static_cast<void*>(data_payload->data()), data_payload->length(), "r");
     if (!mem_file) {
         std::cout << "[SERVER] Error opening memory file for payload\n";
         return;
@@ -312,11 +312,11 @@ void DataHandler::appendDataToServer(std::string& payload, char type) {
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
         curl_easy_setopt(curl, CURLOPT_APPEND, 1L);
         curl_easy_setopt(curl, CURLOPT_READDATA, mem_file);
-        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)data_payload.length());
-        curl_easy_setopt(curl, CURLOPT_URL, server_file_path.c_str());
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(data_payload->length()));
 
         CURLcode res = curl_easy_perform(curl);
         fclose(mem_file);
+        curl_easy_cleanup(curl);
 
         if (res != CURLE_OK) {
         std::cerr << "[SERVER] Błąd transferu pliku " << type << ": " << curl_easy_strerror(res) << std::endl;
@@ -330,9 +330,9 @@ void DataHandler::appendDataToServer(std::string& payload, char type) {
     }
     
     std::cout << "[SERVER] Saved data " << type << " successfully to " << url << std::endl;
-    data_payload.clear();
+    data_payload->clear();
     
-    curl_easy_cleanup(curl);
+
 
 }
 
@@ -349,7 +349,6 @@ void DataHandler::sendPhoto(std::string& image_file_path_to_send){
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-        curl_easy_setopt(curl, CURLOPT_READDATA, file);
     }
     else {
         std::cerr << "[SERVER] CURL error!\n";
@@ -375,8 +374,10 @@ void DataHandler::sendPhoto(std::string& image_file_path_to_send){
         
         curl_easy_setopt(curl, CURLOPT_URL, sftp_image_path.c_str());
         curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
+        curl_easy_setopt(curl, CURLOPT_READDATA, file);
         CURLcode res = curl_easy_perform(curl);
         fclose(file);
+        curl_easy_cleanup(curl);
 
         if (res != CURLE_OK) {
             std::cerr << "[SERVER] Błąd przesyłania: " << curl_easy_strerror(res) << '\n';
@@ -391,7 +392,7 @@ void DataHandler::sendPhoto(std::string& image_file_path_to_send){
 
 std::string DataHandler::parseENV(){
 
-    std::ifstream file(passwd_file_path); // może być zgrzyt - wtedy wskaźnik na passwd_file_path: &passwd_file_path
+    std::ifstream file(passwd_file_path);
     
     if (!file.is_open()) {
         std::cerr << "[SERVER] Błąd: Nie można otworzyć pliku środowiskowego: " << passwd_file_path << std::endl;
@@ -422,14 +423,13 @@ void DataHandler::createMissingFiles(){
     
     bool climate_file_exists = false;
     bool gas_file_exists = false;
-    bool retry = true;
 
     CURL* curl = curl_easy_init();
     if (!curl) {
         return;
     }
 
-    curl_easy_setopt(curl, CURLOPT_PASSWORD, password.c_str());
+    curl_easy_setopt(curl, CURLOPT_PASSWORD, sftp_passwd.c_str());
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 30L);
     curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
 
@@ -447,14 +447,12 @@ void DataHandler::createMissingFiles(){
 
     if (!climate_file_exists) {
         std::string climate_header = "Timestamp; Humidity; Temperature; Peltier_In; Peltier_Out\n";
-        appendData(climate_header, 'c');
+        appendDataToServer(climate_header, 'c');
     }
 
     if (!gas_file_exists) {
-        std::string gas_header =   "Timestamp; MG811_OKY_CO2_f; MQ3_EtOH_f; MQ4_CH4_f; SEN0565_CH4_f; 
-                                    SEN0568_H2S_f; SEN0569_EtOH_f; SEN0567_NH3_f; SEN0467_H2S_f; 
-                                    SEN0469_NH3_f; SCD41_CO2_f; SCD41_T_f; SCD41_H_f\n";
-        appendData(gas_header, 'g');
+        std::string gas_header =   "Timestamp; MG811_OKY_CO2_f; MQ3_EtOH_f; MQ4_CH4_f; SEN0565_CH4_f; SEN0568_H2S_f; SEN0569_EtOH_f; SEN0567_NH3_f; SEN0467_H2S_f; SEN0469_NH3_f; SCD41_CO2_f; SCD41_T_f; SCD41_H_f\n";
+        appendDataToServer(gas_header, 'g');
     }
 }
 
