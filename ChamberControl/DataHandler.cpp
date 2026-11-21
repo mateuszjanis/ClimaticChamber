@@ -377,10 +377,11 @@ void DataHandler::sendPhoto(std::string& image_file_path_to_send){
         curl_easy_setopt(curl, CURLOPT_READDATA, file);
         CURLcode res = curl_easy_perform(curl);
         fclose(file);
-        curl_easy_cleanup(curl);
+        
 
         if (res != CURLE_OK) {
             std::cerr << "[SERVER] Błąd przesyłania: " << curl_easy_strerror(res) << '\n';
+            curl_easy_cleanup(curl);
             return;
         }
         else {
@@ -388,6 +389,8 @@ void DataHandler::sendPhoto(std::string& image_file_path_to_send){
             photo_payload.erase(photo_payload.begin());
         }
     }
+
+    curl_easy_cleanup(curl);
 }
 
 std::string DataHandler::parseENV(){
