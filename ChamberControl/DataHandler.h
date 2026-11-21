@@ -1,6 +1,6 @@
 #pragma once
 #include "ControlSensors.h"
-#include "ServerHandler.h"
+#include <curl/curl.h>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -11,8 +11,9 @@
 #include <sys/stat.h>
 #include <nlohmann/json.hpp>
 #include <system_error>
-
-// #include filessystem needed???
+#include <vector>
+#include <filesystem>
+// #include filesystem needed???
 
 class DataHandler{
 
@@ -30,7 +31,16 @@ class DataHandler{
     const std::chrono::minutes gas_data_record_interval;
     const std::chrono::minutes image_record_interval;
 
-    ServerHandler serverSFTP;
+    // server 
+
+    std::string gas_data_payload;
+    std::string climate_data_payload;
+    std::vector<std::string> photo_payload; // should include day_dir/Images/photo_name
+                                            // or use last_date in run()
+
+    const std::string sftp_path;
+    const std::string passwd_file_path;
+    const std::string sftp_passwd;
 
 public:
 
@@ -44,14 +54,17 @@ public:
 
         day_dir("Data_" + getDateString()),
 
-        climate_data_record_interval(std::chrono::minutes(config_json["settings"]["climate_data_record_interval"])),
-        gas_data_record_interval(std::chrono::minutes(config_json["settings"]["gas_data_record_interval"])),
-        image_record_interval(std::chrono::minutes(config_json["settings"]["image_record_interval"])),
-        
-        serverSFTP(config_json["paths"]["sftp_path"].get<std::string>(),
-//				   config_json["paths"]["sftp_username"].get<std::string>(),
-				   config_json["paths"]["passwd_file_path"].get<std::string>(), 
-				   data_dir, images_dir, day_dir) 
+        climate_data_record_interval(   std::chrono::minutes(config_json["settings"]["climate_data_record_interval"])),
+        gas_data_record_interval(       std::chrono::minutes(config_json["settings"]["gas_data_record_interval"])),
+        image_record_interval(          std::chrono::minutes(config_json["settings"]["image_record_interval"])),
+
+        gas_data_payload("");
+        climate_data_payload("");
+        photo_payload("");
+
+        sftp_path(config_json["paths"]["sftp_path"].get<std::string>()),
+        passwd_file_path(config_json["paths"]["passwd_file_path"].get<std::string>()),
+        sftp_passwd(parseENV())
         {
 
             std::cout << "[DATA] DataHandler initialized\n";
@@ -62,8 +75,9 @@ public:
 
 private:
 
-    void appendClimateDataLocally(std::string& climate_payload);
-    void appendGasDataLocally(std::string& gas_payload);
+    // void appendClimateDataLocally(std::string& climate_payload);
+    // void appendGasDataLocally(std::string& gas_payload);
+    void appendDataLocally(std::string& payload_loc, char type);
     std::string getTimeString();
     std::string getDateString();
     std::string getClimatePayload();
@@ -75,6 +89,13 @@ private:
     void createNecessaryDirectoriesAndFiles();
     void deleteDayPhotos(std::string& last_date);
 
+    // server functions
+    std::string parseENV();
+
+    bool appendDataToServer(std::string& payload, char type);
+    bool sendPhoto(std::string& image_to_send);
+
+    void createMissingFiles();
 };
 
     

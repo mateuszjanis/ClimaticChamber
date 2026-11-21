@@ -20,7 +20,6 @@
     "hum_down_path": "/sys/bus/iio/devices/iio:device0/in_humidityrelative_input",
 
     "sftp_path": "sftp://matjanis@student.agh.edu.pl/home/imirgrp/matjanis/public_html/Data/",
-    "sftp_username": "matjanis",
     "passwd_file_path": "../.env",
     "data_dir": "../Data",
     "climate_filename": "ClimateRecords.csv",
