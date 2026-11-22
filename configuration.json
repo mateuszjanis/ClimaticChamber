@@ -11,7 +11,7 @@
     "sensors_update_interval": 10,
     "climate_data_record_interval": 10,
     "gas_data_record_interval": 30,
-    "image_record_interval": 2
+    "image_record_interval": 30
 },
 "paths": {
     "temp_up_path": "/sys/bus/iio/devices/iio:device1/in_temp_input",
@@ -22,6 +22,7 @@
     "sftp_path": "sftp://matjanis@student.agh.edu.pl/home/imirgrp/matjanis/public_html/Data/",
     "passwd_file_path": "../.env",
     "data_dir": "../Data",
+    "esp_path": "/home/esp/Data",
     "climate_filename": "ClimateRecords.csv",
     "gas_filename": "GasRecords.csv",
     "images_dir": "Images",

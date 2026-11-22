@@ -7,7 +7,6 @@
 #define CONSUMER "chamber_rpi5"
 
 void parseConfigurationFile(nlohmann::json &configuration_json);
-void createConfigurationESP(nlohmann::json& configuration_json)
 
 int main() {
 	

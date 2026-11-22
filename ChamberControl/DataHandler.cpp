@@ -442,7 +442,7 @@ bool DataHandler::fileExistsOnServer(CURL* curl) {
     }
 }
 
-void createConfigurationESP(int gas_data_record_interval_min){
+void DataHandler::createConfigurationESP(int gas_data_record_interval_min){
     
     std::ofstream config_file("/home/esp/GAS_DATA_RECORD_INTERVAL.txt");
     if (!config_file.is_open()) {
