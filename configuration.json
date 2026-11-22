@@ -11,7 +11,7 @@
     "sensors_update_interval": 10,
     "climate_data_record_interval": 10,
     "gas_data_record_interval": 30,
-    "image_record_interval": 30
+    "image_record_interval": 2
 },
 "paths": {
     "temp_up_path": "/sys/bus/iio/devices/iio:device1/in_temp_input",
