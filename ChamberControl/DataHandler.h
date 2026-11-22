@@ -65,6 +65,8 @@ public:
         sftp_passwd(parseENV())
         {
 
+            createConfigurationESP(config_json["settings"]["gas_data_record_interval"].get<int>());
+
             std::cout << "[DATA] DataHandler initialized\n";
         
     };
@@ -73,8 +75,7 @@ public:
 
 private:
 
-    // void appendClimateDataLocally(std::string& climate_payload);
-    // void appendGasDataLocally(std::string& gas_payload);
+    void createConfigurationESP(int gas_data_record_interval_min);
     void appendDataLocally(std::string& payload_loc, char type);
     std::string getTimeString();
     std::string getDateString();

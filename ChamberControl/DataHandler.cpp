@@ -441,3 +441,17 @@ bool DataHandler::fileExistsOnServer(CURL* curl) {
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
+
+void createConfigurationESP(int gas_data_record_interval_min){
+    
+    std::ofstream config_file("/home/esp/GAS_DATA_RECORD_INTERVAL.txt");
+    if (!config_file.is_open()) {
+        std::cerr << "[DATA] Błąd: Nie można utworzyć pliku konfiguracyjnego ESP!" << std::endl;
+        return;
+    }
+
+    config_file << gas_data_record_interval_min;
+    config_file.close();
+
+    std::cout << "[DATA] Plik konfiguracyjny ESP został utworzony." << std::endl;
+}
