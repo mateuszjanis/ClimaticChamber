@@ -161,11 +161,11 @@ bool updateSensors() {
     
         pelt_temp_in = pelt_temp_in_temp;
         pelt_temp_out = pelt_temp_out_temp;
-        std::cout << "Peltier sensors read correctly: " << std::endl;
+        std::cout << "Peltier sensors read correctly!" << std::endl;
     
     }
 
-    return sensors_reading_error; // Return the error status
+    return sensors_reading_error;
 
 }
 

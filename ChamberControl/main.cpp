@@ -7,14 +7,11 @@
 #define CONSUMER "chamber_rpi5"
 
 void parseConfigurationFile(nlohmann::json &configuration_json);
-// void createConfigurationESP();
 
 int main() {
 	
     nlohmann::json configuration_json;
     parseConfigurationFile(configuration_json);
-    
-    // set up GPIO chip and request lines - przenieść do konstruktora PeltierController
 
     auto chip = ::gpiod::chip(CHIP_PATH);
     auto request = chip.prepare_request()
@@ -51,11 +48,3 @@ void parseConfigurationFile(nlohmann::json& configuration_json){
     configuration_json = nlohmann::json::parse(configuration_file);
 
 }
-
-/*
-void createConfigurationESP(){
-    // interval for gas sensors
-    // 
-}
-
-*/
