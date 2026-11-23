@@ -9,9 +9,38 @@ void DataHandler::run(){
     // auto last_gas_send_time = std::chrono::steady_clock::now();
     auto last_gas_send_ftime = std::filesystem::last_write_time((esp_path + "/" + gas_filename).c_str());
     auto last_climate_send_time = std::chrono::steady_clock::now();
-    auto last_image_send_time = std::chrono::steady_clock::now();
 
     std::string last_date = "";
+
+    // Make first measurements
+        // Climate data --------------------------------------------------
+        auto last_climate_send_time = std::chrono::steady_clock::now();
+        
+        std::cout << "[DATA] Climate data handle activated!\n";
+        std::string climate_payload = getClimatePayload();
+        appendDataLocally(climate_payload, 'c');
+        appendDataToServer(climate_payload, 'c');
+        std::cout << "[DATA] Climate data handle completed!\n";
+
+        // Gas data -------------------------------------------------------
+        auto last_gas_send_ftime = std::filesystem::last_write_time((esp_path + "/" + gas_filename).c_str());
+        
+        std::cout << "[DATA] Gas data handle activated!\n";
+        std::string gas_payload = getGasPayload();
+        appendDataLocally(gas_payload, 'g');
+        appendDataToServer(gas_payload, 'g');
+        std::cout << "[DATA] Gas data handle completed!\n";
+
+        // Photo ---------------------------------------------------------
+        auto last_image_send_time = std::chrono::steady_clock::now();		
+        
+        std::cout << "[DATA] Image handle activated!\n";
+        std::string image_filename = getImageFileName();
+        std::string image_file_path = day_dir + "/" + images_dir + "/" + image_filename;
+        takePhoto( data_dir + "/" + image_file_path );
+        sendPhoto(image_file_path);
+        std::cout << "[DATA] Image handle completed!\n"; 
+
 
     while (true) {
 

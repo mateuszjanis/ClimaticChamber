@@ -144,8 +144,19 @@ void PeltierController::runTemperatureControl(){
                 
                 double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
         
-                if(pelt_temp_diff > temp_diff_fan_threshold || pelt_temp_in >= 57 || pelt_temp_out >= 57) fanOn();
+                if(pelt_temp_diff > temp_diff_fan_threshold) 
+                {
+                        fanOn();
+
+                        if (pelt_temp_in >= 57 || pelt_temp_out >= 57) {
+                                std::cout << "------------------ Peltier temperature too high -----------------\n";
+                                setMode(IDLE);
+                                break;
+                        }
+                }
                 else fanOff();
+
+
 
                 switch (curr_mode) {
                         case IDLE: // idle
@@ -174,7 +185,7 @@ void PeltierController::runTemperatureControl(){
                                 break;
                         default:
                                 std::cerr << "------------------ Invalid mode -----------------\n";
-                                setIdle();
+                                setMode(IDLE);
                                 break;
                 }
         } else {
