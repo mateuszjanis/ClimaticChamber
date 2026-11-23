@@ -15,21 +15,12 @@ void DataHandler::run(){
     // Make first measurements
         // Climate data --------------------------------------------------
         auto last_climate_send_time = std::chrono::steady_clock::now();
-        
+
         std::cout << "[DATA] Climate data handle activated!\n";
         std::string climate_payload = getClimatePayload();
         appendDataLocally(climate_payload, 'c');
         appendDataToServer(climate_payload, 'c');
         std::cout << "[DATA] Climate data handle completed!\n";
-
-        // Gas data -------------------------------------------------------
-        auto last_gas_send_ftime = std::filesystem::last_write_time((esp_path + "/" + gas_filename).c_str());
-        
-        std::cout << "[DATA] Gas data handle activated!\n";
-        std::string gas_payload = getGasPayload();
-        appendDataLocally(gas_payload, 'g');
-        appendDataToServer(gas_payload, 'g');
-        std::cout << "[DATA] Gas data handle completed!\n";
 
         // Photo ---------------------------------------------------------
         auto last_image_send_time = std::chrono::steady_clock::now();		
