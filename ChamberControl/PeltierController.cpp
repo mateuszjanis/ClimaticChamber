@@ -71,7 +71,7 @@ void PeltierController::setMode(enum mode mode){
         bool enable_temp_equalization = true;
         
         if(curr_mode == mode){
-                std::cerr << "------------------ Peltier already in mode -----------------\n";
+                std::cout << "------------------ Peltier already in mode -----------------\n";
                 return;
         }
         else{
@@ -144,18 +144,16 @@ void PeltierController::runTemperatureControl(){
                 
                 double pelt_temp_diff = abs(pelt_temp_in - pelt_temp_out);
         
-                if(pelt_temp_diff > temp_diff_fan_threshold) 
-                {
-                        fanOn();
+                if(pelt_temp_diff > fan_on_threshold) fanOn();
+                if(pelt_temp_diff <= fan_off_threshold) fanOff();
 
-                        if (pelt_temp_in >= 57 || pelt_temp_out >= 57) {
-                                std::cout << "------------------ Peltier temperature too high -----------------\n";
-                                setMode(IDLE);
-                                return;
-                        }
+                if (pelt_temp_in >= 57 || pelt_temp_out >= 57) {
+
+                        std::cout << "------------------ Peltier temperature too high -----------------\n";
+                        setMode(IDLE);
+                        break;
+
                 }
-                else fanOff();
-
 
 
                 switch (curr_mode) {

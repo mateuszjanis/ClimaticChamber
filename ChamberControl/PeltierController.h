@@ -36,7 +36,9 @@ class PeltierController {
     const double goal_temperature; // degrees Celsius
     const double temp_sensitivity; // degrees Celsius
     const double temp_diff_toggle_threshold; // degrees Celsius
-    const double temp_diff_fan_threshold; // degrees Celsius
+    // const double temp_diff_fan_threshold; // degrees Celsius
+    const double fan_on_threshold; // degrees Celsius
+    const double fan_off_threshold; // degrees Celsius
 
     double temp_min; // minimum temperature
     double temp_max; // maximum temperature
@@ -49,7 +51,9 @@ public:
         goal_temperature(config_json["control"]["goal_temperature"]),
         temp_sensitivity(config_json["settings"]["temp_sensitivity"]),
         temp_diff_toggle_threshold(config_json["settings"]["temp_diff_toggle_threshold"]),
-        temp_diff_fan_threshold(config_json["settings"]["temp_diff_fan_threshold"])
+        fan_on_threshold(config_json["settings"]["temp_diff_fan_threshold"] + 1.0),
+        fan_off_threshold(config_json["settings"]["temp_diff_fan_threshold"] - 1.0),
+        // temp_diff_fan_threshold(config_json["settings"]["temp_diff_fan_threshold"])
     {
         initialSensorsReading();
         initialPeltierSensorsReading();
