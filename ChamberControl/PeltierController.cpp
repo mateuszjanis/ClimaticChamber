@@ -151,7 +151,7 @@ void PeltierController::runTemperatureControl(){
                         if (pelt_temp_in >= 57 || pelt_temp_out >= 57) {
                                 std::cout << "------------------ Peltier temperature too high -----------------\n";
                                 setMode(IDLE);
-                                break;
+                                return;
                         }
                 }
                 else fanOff();

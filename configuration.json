@@ -6,10 +6,10 @@
     "fan_treshold": 25,
     "temp_sensitivity": 1.0,
     "temp_diff_toggle_threshold": 4,
-    "temp_diff_fan_threshold": 25,
+    "temp_diff_fan_threshold": 27,
     "acceptable_sens_diff": 10.0,
     "sensors_update_interval": 10,
-    "climate_data_record_interval": 10,
+    "climate_data_record_interval": 5,
     "gas_data_record_interval": 30,
     "image_record_interval": 30
 },

@@ -6,9 +6,8 @@ void DataHandler::run(){
 
     createNecessaryDirectoriesAndFiles();
 
-    // auto last_gas_send_time = std::chrono::steady_clock::now();
     auto last_gas_send_ftime = std::filesystem::last_write_time((esp_path + "/" + gas_filename).c_str());
-    auto last_climate_send_time = std::chrono::steady_clock::now();
+
 
     std::string last_date = "";
 
